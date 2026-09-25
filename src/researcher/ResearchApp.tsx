@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ContentVersion, InfoTaskId, Pair, TaskChoice, Version } from '../shared/protocol';
-import { assignment, getScenario, INFO_TASKS, INFO_TASK_IDS, PAIR_NAMES } from '../shared/protocol';
+import { assignment, EXTRA_TASK_IDS, getScenario, INFO_TASKS, INFO_TASK_IDS, PAIR_NAMES } from '../shared/protocol';
 
 type Tab = 'overzicht' | 'voorbereiding' | 'live' | 'beoordeling';
 type Device = 'Smartphone' | 'Desktop';
@@ -14,8 +14,8 @@ function makeRoster(): Participant[] {
     const smartphone = n <= 13;
     const index = smartphone ? n - 1 : n - 14;
     const trials: Trial[] = [];
-    for (let offset = 0; offset < 5; offset++) {
-      const pair = (((index + offset) % 5) + 1) as Pair;
+    for (let offset = 0; offset < 6; offset++) {
+      const pair = (((index + offset) % 6) + 1) as Pair;
       const k = pair - 1;
       const combinations: [Version, ContentVersion, Version, ContentVersion][] = [
         ['A', 'X', 'B', 'Y'], ['B', 'X', 'A', 'Y'], ['A', 'Y', 'B', 'Z'], ['B', 'Y', 'A', 'Z'],
@@ -24,6 +24,7 @@ function makeRoster(): Participant[] {
       const order = combinations[(index + k) % combinations.length];
       trials.push({ kind: 'booking', pair, version: order[0], content: order[1] }, { kind: 'booking', pair, version: order[2], content: order[3] });
       if (offset === 1 || offset === 3) trials.push({ kind: 'information', id: INFO_TASK_IDS[(index + offset) % INFO_TASK_IDS.length] });
+      if (offset === 5) trials.push({ kind: 'information', id: 'I5' });
     }
     roster.push({ code: `D${String(n).padStart(2, '0')}`, device: smartphone ? 'Smartphone' : 'Desktop', trials });
   }
@@ -31,7 +32,7 @@ function makeRoster(): Participant[] {
 }
 
 const roster = makeRoster();
-const allPairs = [1, 2, 3, 4, 5] as const;
+const allPairs = [1, 2, 3, 4, 5, 6] as const;
 
 function ResearchHeader({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void }) {
   const tabs: { key: Tab; label: string }[] = [
@@ -56,14 +57,14 @@ function DemoLauncher() {
   const href = `/demo?paar=${pair}&variant=${version}&${task.startsWith('I') ? `info=${task}` : `inhoud=${task}`}&vergroting=${scale}`;
   return <section className="research-card demo-launcher">
     <div className="card-heading"><div><p className="research-kicker">Schermen bekijken</p><h2>Demomodus</h2></div><span className="demo-pill">Geen onderzoeksdata</span></div>
-    <p>Open een boeking met dezelfde schermen en varianten als de geplande taken.</p>
-    <div className="research-form-grid">
-      <label>Taakpaar<select value={pair} onChange={event => setPair(Number(event.target.value) as Pair)}>{allPairs.map(value => <option key={value} value={value}>{value} · {PAIR_NAMES[value]}</option>)}</select></label>
-      <label>Variant<select value={version} onChange={event => setVersion(event.target.value as Version)}><option>A</option><option>B</option></select></label>
-      <label>Opdracht<select value={task} onChange={event => setTask(event.target.value as TaskChoice)}>{(['X', 'Y', 'Z', 'W'] as const).map(code => <option key={code} value={code}>Boeking {code}</option>)}{INFO_TASK_IDS.map(code => <option key={code} value={code}>Siteopdracht {code}</option>)}</select></label>
-      <label>Tekstvergroting<select value={scale} onChange={event => setScale(Number(event.target.value))}>{[100, 125, 150, 200].map(value => <option key={value} value={value}>{value}%</option>)}</select></label>
+    <p>Open een opdracht met dezelfde schermen en varianten als de geplande taken.</p>
+    <div className="demo-toggle-groups">
+      <fieldset className="toggle-fieldset"><legend>Test</legend><div className="toggle-grid test-toggles">{allPairs.map(value => <button type="button" className="research-toggle" aria-pressed={pair === value} key={value} onClick={() => setPair(value)}>Test {value}<span>{PAIR_NAMES[value]}</span></button>)}</div></fieldset>
+      <fieldset className="toggle-fieldset"><legend>Variant</legend><div className="toggle-grid two-toggles">{(['A', 'B'] as Version[]).map(value => <button type="button" className="research-toggle" aria-pressed={version === value} key={value} onClick={() => setVersion(value)}>Variant {value}{pair === 6 && <span>{value === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span>}</button>)}</div></fieldset>
+      <fieldset className="toggle-fieldset"><legend>Opdracht</legend><div className="toggle-grid task-toggles">{(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" className="research-toggle" aria-pressed={task === code} key={code} onClick={() => setTask(code)}>Boeking {code}</button>)}{EXTRA_TASK_IDS.map(code => <button type="button" className="research-toggle" aria-pressed={task === code} key={code} onClick={() => setTask(code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}</div></fieldset>
+      <fieldset className="toggle-fieldset"><legend>Tekstvergroting</legend><div className="toggle-grid scale-toggles">{[100, 125, 150, 200].map(value => <button type="button" className="research-toggle" aria-pressed={scale === value} key={value} onClick={() => setScale(value)}>{value}%</button>)}</div></fieldset>
     </div>
-    <div className="demo-summary"><strong>Opdrachtkaart</strong><p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(pair, task as ContentVersion))}</p></div>
+    <div className="demo-summary"><strong>Opdrachtkaart</strong><p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(pair, task as ContentVersion))}</p>{task === 'I5' && <p><strong>Geef vooraf dit oefenadres:</strong> {INFO_TASKS.I5.expectedAnswer}</p>}</div>
     <a className="research-primary" href={href} target="_blank" rel="noreferrer">Open demo <span aria-hidden="true">↗</span></a>
   </section>;
 }
@@ -72,13 +73,13 @@ function Overview({ selected, setSelected }: { selected: string; setSelected: (c
   const participant = roster.find(item => item.code === selected)!;
   return <>
     <div className="research-page-heading"><div><p className="research-kicker">PWS · Fysiotherapie Valkenswaard</p><h1>Onderzoeksoverzicht</h1><p>Voorbeeld van het vaste rooster en de te bouwen bediening.</p></div><a className="research-secondary" href="/print/opdrachten" target="_blank" rel="noreferrer">Opdrachtkaarten printen</a></div>
-    <div className="stat-grid"><div className="stat-card"><strong>25</strong><span>geplande deelnemers</span></div><div className="stat-card"><strong>13</strong><span>smartphone</span></div><div className="stat-card"><strong>12</strong><span>desktop</span></div><div className="stat-card"><strong>12</strong><span>taken per deelnemer</span></div></div>
+    <div className="stat-grid"><div className="stat-card"><strong>25</strong><span>geplande deelnemers</span></div><div className="stat-card"><strong>13</strong><span>smartphone</span></div><div className="stat-card"><strong>12</strong><span>desktop</span></div><div className="stat-card"><strong>15</strong><span>taken per deelnemer</span></div></div>
     <div className="research-columns">
       <section className="research-card"><div className="card-heading"><div><p className="research-kicker">Rooster</p><h2>Deelnemers</h2></div></div>
         <div className="participant-list">{roster.map(item => <button type="button" key={item.code} className={selected === item.code ? 'selected' : ''} onClick={() => setSelected(item.code)}><strong>{item.code}</strong><span>{item.device}</span><span className="roster-status">Gepland</span></button>)}</div>
       </section>
       <section className="research-card"><div className="card-heading"><div><p className="research-kicker">{participant.device}</p><h2>Taakvolgorde {selected}</h2></div><span className="demo-pill">Voorbeeldrooster</span></div>
-        <ol className="trial-list">{participant.trials.map((trial, index) => <li key={index}><span className="trial-number">{String(index + 1).padStart(2, '0')}</span><div><strong>{trial.kind === 'booking' ? PAIR_NAMES[trial.pair] : 'Siteopdracht'}</strong><small>{trial.kind === 'booking' ? `Paar ${trial.pair} · Variant ${trial.version} · Inhoud ${trial.content}` : `${trial.id} · Verkennend, buiten A/B`}</small></div></li>)}</ol>
+        <ol className="trial-list">{participant.trials.map((trial, index) => <li key={index}><span className="trial-number">{String(index + 1).padStart(2, '0')}</span><div><strong>{trial.kind === 'booking' ? PAIR_NAMES[trial.pair] : trial.id === 'I5' ? 'Inlogopdracht' : 'Siteopdracht'}</strong><small>{trial.kind === 'booking' ? `Paar ${trial.pair} · Variant ${trial.version} · Inhoud ${trial.content}` : `${trial.id} · Verkennend, buiten A/B`}</small></div></li>)}</ol>
       </section>
     </div>
     <DemoLauncher />
@@ -106,7 +107,7 @@ function LiveTask({ selected }: { selected: string }) {
   const participant = roster.find(item => item.code === selected)!;
   const trial = participant.trials[index];
   return <><div className="research-page-heading"><div><p className="research-kicker">Live taakweergave</p><h1>{selected} · taak {index + 1} van {participant.trials.length}</h1><p>De live timer en gebeurtenissen vragen een serververbinding.</p></div></div>
-    <div className="research-columns"><section className="research-card"><div className="card-heading"><div><p className="research-kicker">Opdracht voor onderzoeker</p><h2>{trial.kind === 'booking' ? `${PAIR_NAMES[trial.pair]} · ${trial.version}/${trial.content}` : `Siteopdracht ${trial.id}`}</h2></div></div><div className="assignment-large">{trial.kind === 'booking' ? assignment(getScenario(trial.pair, trial.content)) : INFO_TASKS[trial.id].prompt}</div><div className="task-controls"><button type="button" onClick={() => setIndex(Math.max(0, index - 1))} disabled={index === 0}>Vorige taak</button><button type="button" onClick={() => setIndex(Math.min(participant.trials.length - 1, index + 1))} disabled={index === participant.trials.length - 1}>Volgende taak</button></div></section><section className="research-card"><p className="research-kicker">Verbinding</p><h2>Wacht op deelnemersapparaat</h2><div className="live-placeholder"><span aria-hidden="true">◌</span><strong>Nog niet gekoppeld</strong><p>Na de backendfase verschijnen hier timer, actuele stap, keuzes en gebeurtenissen.</p></div><button type="button" className="research-primary disabled-button" disabled>Taak starten</button></section></div>
+    <div className="research-columns"><section className="research-card"><div className="card-heading"><div><p className="research-kicker">Opdracht voor onderzoeker</p><h2>{trial.kind === 'booking' ? `${PAIR_NAMES[trial.pair]} · ${trial.version}/${trial.content}` : trial.id === 'I5' ? 'Inlogopdracht I5' : `Siteopdracht ${trial.id}`}</h2></div></div><div className="assignment-large">{trial.kind === 'booking' ? assignment(getScenario(trial.pair, trial.content)) : INFO_TASKS[trial.id].prompt}</div>{trial.kind === 'information' && trial.id === 'I5' && <p className="inline-note"><strong>Geef vooraf dit oefenadres:</strong> {INFO_TASKS.I5.expectedAnswer}</p>}<div className="task-controls"><button type="button" onClick={() => setIndex(Math.max(0, index - 1))} disabled={index === 0}>Vorige taak</button><button type="button" onClick={() => setIndex(Math.min(participant.trials.length - 1, index + 1))} disabled={index === participant.trials.length - 1}>Volgende taak</button></div></section><section className="research-card"><p className="research-kicker">Verbinding</p><h2>Wacht op deelnemersapparaat</h2><div className="live-placeholder"><span aria-hidden="true">◌</span><strong>Nog niet gekoppeld</strong><p>Na de backendfase verschijnen hier timer, actuele stap, keuzes en gebeurtenissen.</p></div><button type="button" className="research-primary disabled-button" disabled>Taak starten</button></section></div>
   </>;
 }
 
@@ -115,7 +116,7 @@ function Review() {
 }
 
 function PrintCards() {
-  return <div className="print-page"><div className="print-toolbar"><h1>Opdrachtkaarten</h1><button type="button" onClick={() => window.print()}>Print deze pagina</button></div><p>Fictieve opdrachten. Lees de kaart voor en laat deze tijdens de taak naast het apparaat liggen.</p><div className="print-cards">{roster.flatMap(person => person.trials.map((trial, index) => <article className="print-card" key={`${person.code}-${index}`}><small>{person.code} · Taak {index + 1} · {trial.kind === 'booking' ? `Paar ${trial.pair} · ${trial.version}/${trial.content}` : `Siteopdracht ${trial.id}`}</small><p>{trial.kind === 'booking' ? assignment(getScenario(trial.pair, trial.content)) : INFO_TASKS[trial.id].prompt}</p></article>))}</div></div>;
+  return <div className="print-page"><div className="print-toolbar"><h1>Opdrachtkaarten</h1><button type="button" onClick={() => window.print()}>Print deze pagina</button></div><p>Fictieve opdrachten. Lees de kaart voor en laat deze tijdens de taak naast het apparaat liggen.</p><div className="print-cards">{roster.flatMap(person => person.trials.map((trial, index) => <article className="print-card" key={`${person.code}-${index}`}><small>{person.code} · Taak {index + 1} · {trial.kind === 'booking' ? `Paar ${trial.pair} · ${trial.version}/${trial.content}` : trial.id === 'I5' ? 'Inlogopdracht I5' : `Siteopdracht ${trial.id}`}</small><p>{trial.kind === 'booking' ? assignment(getScenario(trial.pair, trial.content)) : INFO_TASKS[trial.id].prompt}</p>{trial.kind === 'information' && trial.id === 'I5' && <p><strong>Oefenadres: {INFO_TASKS.I5.expectedAnswer}</strong></p>}</article>))}</div></div>;
 }
 
 export function ResearchApp({ printMode = false }: { printMode?: boolean }) {

@@ -1,14 +1,14 @@
 # Inhoud en testroutes
 
-Voordat de praktijksite verschijnt, kiest de onderzoeker op het startscherm een test, A/B-variant en boekingsopdracht X/Y/Z/W of siteopdracht I1/I2/I3/I4. De opdrachttekst en, bij siteopdrachten, het verwachte antwoord staan uitsluitend op dat startscherm. Na **Start deelnemersscherm** verschijnt Home zonder onderzoeksinstellingen. De keuze blijft actief op alle deelnemerspagina’s. Voor een volgende oefenopdracht kan de onderzoeker de pagina opnieuw laden en een nieuwe combinatie kiezen. De URL bewaart de keuze als queryparameters.
+Voordat de praktijksite verschijnt, kiest de onderzoeker met schakelknoppen op het startscherm een test, A/B-variant en boekingsopdracht X/Y/Z/W of extra opdracht I1/I2/I3/I4/I5. De opdrachttekst en, bij extra opdrachten, het verwachte antwoord staan uitsluitend op dat startscherm. Na **Start deelnemersscherm** verschijnt Home zonder onderzoeksinstellingen. De keuze blijft actief op alle deelnemerspagina’s. Voor een volgende oefenopdracht kan de onderzoeker de pagina opnieuw laden en een nieuwe combinatie kiezen. De URL bewaart de keuze als queryparameters.
 
-Per deelnemer zijn tien boekingen en twee verkennende siteopdrachten gepland. De siteopdrachten staan na het tweede en vierde boekingspaar en tellen niet mee in de gepaarde A/B-uitkomsten. Het onderzoekspaneel toont een voorbeeldrooster en een demostarter; registratie en koppeling met een deelnemersapparaat zijn nog niet aangesloten.
+Per deelnemer zijn twaalf boekingen, twee verkennende informatieopdrachten en één inlogopdracht gepland. De informatieopdrachten staan na het tweede en vierde boekingspaar; de inlogopdracht staat na het zesde paar. Deze drie opdrachten tellen niet mee in de gepaarde A/B-uitkomsten. Het onderzoekspaneel toont een voorbeeldrooster en een demostarter; registratie en koppeling met een deelnemersapparaat zijn nog niet aangesloten.
 
-De vier afzonderlijke tests zijn tekstgrootte, navigatie, contrast en bevestigingsanimatie. Daarnaast is er een vijfde totaalvergelijking van het basisontwerp met de gecombineerde aanpassingen. Iedere test heeft variant A en B; de boekingsroute blijft gedeeld. Er zijn vier verschillende doelafspraken per paar. Binnen één paar vallen de doeldata in dezelfde maand.
+De eerste vier afzonderlijke tests zijn tekstgrootte, navigatie, contrast en animatie. Test 5 vergelijkt het basisontwerp met de gecombineerde aanpassingen. Test 6 onderzoekt geduld bij laden: variant A toont een leeg laadscherm, variant B een skeletonscherm. Beide varianten wachten bij iedere schermovergang exact 1,4 seconde. Iedere test heeft variant A en B; de boekingsroute blijft gedeeld. Er zijn vier verschillende doelafspraken per paar. Binnen één paar vallen de doeldata in dezelfde maand. Bij test 4B en 5B animeert GSAP schermen en onderdelen tijdens het navigeren en de bevestiging; de bewegingsvoorkeur van het apparaat wordt gerespecteerd. Test 3A en 5A hebben bewust lichter gekleurde tekst in de boekingsinhoud.
 
 De kalender toont oktober 2026 tot en met maart 2027. Alle geldige maandagen tot en met vrijdagen zijn boekbaar; zaterdagen en zondagen zijn uitgeschakeld. Met de pijlen kan de deelnemer tussen maanden bladeren. De zes diensten en vier tijdstippen zijn op iedere boekbare dag beschikbaar.
 
-De vier siteopdrachten zijn: informatie zoeken over energiemanagement, de voorbeeldlocatie vinden, vaststellen of een oefenafspraak echt is en achterhalen voor wie Bewegen in een groep bedoeld is. Hun doelpagina’s en verwachte antwoorden staan in `src/shared/protocol.ts`.
+De vier informatieopdrachten zijn: informatie zoeken over energiemanagement, de voorbeeldlocatie vinden, vaststellen of een oefenafspraak echt is en achterhalen voor wie Bewegen in een groep bedoeld is. De vijfde extra opdracht laat de deelnemer inloggen met `alex.voorbeeld@example.invalid`, een fictief adres dat de onderzoeker vooraf op een opdrachtkaart geeft. Er wordt geen echte e-mail verstuurd en geen account aangemaakt. Doelpagina’s en verwachte antwoorden staan in `src/shared/protocol.ts`.
 
 Deze fictieve praktijksite gebruikt een informatiehiërarchie met drie lagen:
 
@@ -17,6 +17,8 @@ Deze fictieve praktijksite gebruikt een informatiehiërarchie met drie lagen:
 3. **Specialisatie of onderwerp** zoals Manuele therapie, Energiemanagement, Stem of Oefentherapie.
 
 Daarnaast zijn er dwarsverbindingen naar Expertisecentra, Vergoedingen, Tarieven en Over ons. Via het hoofdmenu, kruimelpad, verwante links en de footer kan een deelnemer op verschillende manieren door de inhoud bewegen. De boekingsflow blijft vanaf elke informatiepagina bereikbaar via *Afspraak maken*.
+
+De header bevat een zoekbalk die titels en tekst van alle informatiepagina’s doorzoekt. Het desktopmenu opent bij aanwijzen of toetsenbordfocus; op mobiel vult het geopende menu de beschikbare schermhoogte. Het bevestigingsscherm vult het gehele scherm en toont de geboekte gegevens.
 
 Elke informatiepagina heeft ook een direct adres in de vorm `/informatie/paginanaam`. De browserterugknop werkt tussen deze pagina’s.
 

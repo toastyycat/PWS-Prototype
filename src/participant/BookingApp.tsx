@@ -1,10 +1,11 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
-import type { KeyboardEvent } from 'react';
+import type { FormEvent, KeyboardEvent } from 'react';
+import { gsap } from 'gsap';
 import type { InfoTaskId, Pair, Scenario, Service, TaskChoice, Time, VariantConfig, Version } from '../shared/protocol';
-import { assignment, BOOKING_MONTHS, formatDate, formatMonth, INFO_TASKS, INFO_TASK_IDS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
-import { mainNavigation, pageById } from './siteContent';
+import { assignment, BOOKING_MONTHS, EXTRA_TASK_IDS, FAKE_LOGIN_EMAIL, formatDate, formatMonth, INFO_TASKS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
+import { mainNavigation, pageById, sitePages } from './siteContent';
 
-type Screen = 'setup' | 'home' | 'info' | 'profile' | 'service' | 'date' | 'time' | 'review' | 'confirmation';
+type Screen = 'setup' | 'home' | 'info' | 'profile' | 'search' | 'login' | 'account' | 'service' | 'date' | 'time' | 'review' | 'confirmation';
 type ChoiceScreen = 'service' | 'date' | 'time';
 
 interface BookingState {
@@ -17,25 +18,28 @@ interface BookingState {
   editReturn: boolean;
   menuOpen: boolean;
   validation: string;
+  loggedIn: boolean;
 }
 
 type Action =
-  | { type: 'START_PARTICIPANT' | 'OPEN_BOOKING' | 'OPEN_HOME' | 'OPEN_PROFILE' | 'CLOSE_PROFILE' | 'TOGGLE_MENU' | 'BACK' | 'NEXT' | 'CONFIRM' | 'CHANGE_BOOKING' }
+  | { type: 'START_PARTICIPANT' | 'OPEN_BOOKING' | 'OPEN_HOME' | 'OPEN_PROFILE' | 'CLOSE_PROFILE' | 'OPEN_SEARCH' | 'OPEN_LOGIN' | 'LOGIN_SUCCESS' | 'LOGOUT' | 'TOGGLE_MENU' | 'BACK' | 'NEXT' | 'CONFIRM' | 'CHANGE_BOOKING' }
   | { type: 'OPEN_PAGE'; pageId: string }
-  | { type: 'NAVIGATE'; screen: 'home' | 'info'; pageId: string | null }
+  | { type: 'NAVIGATE'; screen: 'home' | 'info' | 'search' | 'login'; pageId: string | null }
   | { type: 'SELECT_SERVICE'; service: Service }
   | { type: 'SELECT_DATE'; date: string }
   | { type: 'SELECT_TIME'; time: Time }
   | { type: 'EDIT'; screen: ChoiceScreen };
 
-function readSiteRoute(): { screen: 'home' | 'info'; pageId: string | null } {
+function readSiteRoute(): { screen: 'home' | 'info' | 'search' | 'login'; pageId: string | null } {
+  if (window.location.pathname === '/zoeken') return { screen: 'search', pageId: null };
+  if (window.location.pathname === '/inloggen') return { screen: 'login', pageId: null };
   const match = window.location.pathname.match(/^\/informatie\/([a-z0-9-]+)\/?$/);
   return match && pageById[match[1]] ? { screen: 'info', pageId: match[1] } : { screen: 'home', pageId: null };
 }
 
 const initialState: BookingState = {
   screen: 'setup', pageId: null, profileReturn: 'home', service: null, date: null, time: null,
-  editReturn: false, menuOpen: false, validation: '',
+  editReturn: false, menuOpen: false, validation: '', loggedIn: false,
 };
 
 function reducer(state: BookingState, action: Action): BookingState {
@@ -45,6 +49,10 @@ function reducer(state: BookingState, action: Action): BookingState {
     case 'OPEN_HOME': return { ...state, screen: 'home', pageId: null, menuOpen: false, validation: '' };
     case 'OPEN_PAGE': return { ...state, screen: 'info', pageId: action.pageId, menuOpen: false, validation: '' };
     case 'OPEN_BOOKING': return { ...state, screen: 'service', menuOpen: false, validation: '' };
+    case 'OPEN_SEARCH': return { ...state, screen: 'search', pageId: null, menuOpen: false, validation: '' };
+    case 'OPEN_LOGIN': return { ...state, screen: state.loggedIn ? 'account' : 'login', pageId: null, menuOpen: false, validation: '' };
+    case 'LOGIN_SUCCESS': return { ...state, screen: 'account', loggedIn: true, validation: '' };
+    case 'LOGOUT': return { ...state, screen: 'login', loggedIn: false, validation: '' };
     case 'OPEN_PROFILE': return { ...state, profileReturn: state.screen, screen: 'profile', menuOpen: false };
     case 'CLOSE_PROFILE': return { ...state, screen: state.profileReturn };
     case 'TOGGLE_MENU': return { ...state, menuOpen: !state.menuOpen };
@@ -78,7 +86,7 @@ function reducer(state: BookingState, action: Action): BookingState {
   }
 }
 
-const TITLES: Record<Exclude<Screen, 'setup' | 'home' | 'profile'>, string> = {
+const TITLES: Record<Exclude<Screen, 'setup' | 'home' | 'profile' | 'search' | 'login' | 'account'>, string> = {
   info: 'Informatie',
   service: 'Welke afspraak wilt u maken?',
   date: 'Kies een datum',
@@ -179,13 +187,59 @@ function Navigation({ visible, open, onToggle, onBack, onNext, review }: {
   );
 }
 
+function DesktopNavGroup({ group, openPage }: { group: (typeof mainNavigation)[number]; openPage: (id: string) => void }) {
+  const [open, setOpen] = useState(false);
+  return <div className="nav-group" onMouseEnter={() => setOpen(true)} onMouseLeave={() => setOpen(false)}
+    onFocus={() => setOpen(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setOpen(false); }}
+    onKeyDown={event => { if (event.key === 'Escape') { setOpen(false); (event.currentTarget.querySelector('.nav-trigger') as HTMLButtonElement)?.focus(); } }}>
+    <button type="button" className="nav-trigger" aria-expanded={open} aria-controls={`nav-${group.id}`}>{group.label}<span aria-hidden="true">⌄</span></button>
+    {open && <div className="nav-dropdown" id={`nav-${group.id}`}>
+      <button type="button" className="nav-parent" onClick={() => openPage(group.id)}>Overzicht {group.label} <span aria-hidden="true">→</span></button>
+      {group.children.map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}</button>)}
+    </div>}
+  </div>;
+}
+
+function LoadingScreen({ skeleton }: { skeleton: boolean }) {
+  return <div className={`loading-screen ${skeleton ? 'loading-skeleton' : 'loading-blank'}`} role="status" aria-live="polite">
+    <span className="visually-hidden">Pagina wordt geladen</span>
+    {skeleton && <div className="skeleton-layout" aria-hidden="true">
+      <div className="skeleton-top" /><div className="skeleton-nav" />
+      <div className="skeleton-hero"><div><i /><i /><i /></div><span /></div>
+      <div className="skeleton-content"><i /><i /><div><span /><span /><span /></div></div>
+    </div>}
+  </div>;
+}
+
+function searchPages(query: string) {
+  const terms = query.toLocaleLowerCase('nl-NL').trim().split(/\s+/).filter(Boolean);
+  if (!terms.length) return [];
+  return sitePages.filter(page => {
+    const haystack = [page.title, page.category, page.intro, ...page.sections.flatMap(section => [section.title, section.text])].join(' ').toLocaleLowerCase('nl-NL');
+    return terms.every(term => haystack.includes(term));
+  });
+}
+
 export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange }: { scenario: Scenario; infoTask: InfoTaskId | null; variant: VariantConfig; scale: number; onVariantChange: (pair: Pair, version: Version, task: TaskChoice) => void }) {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [loading, setLoading] = useState(false);
+  const loadingRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(window.location.search).get('q') || '');
+  const [submittedSearch, setSubmittedSearch] = useState(searchTerm);
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginError, setLoginError] = useState('');
   const bookingRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
-    const handlePopState = () => dispatch({ type: 'NAVIGATE', ...readSiteRoute() });
+    const handlePopState = () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      loadingRef.current = false;
+      setLoading(false);
+      setSubmittedSearch(new URLSearchParams(window.location.search).get('q') || '');
+      dispatch({ type: 'NAVIGATE', ...readSiteRoute() });
+    };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    return () => { window.removeEventListener('popstate', handlePopState); if (timerRef.current) clearTimeout(timerRef.current); };
   }, []);
   useEffect(() => {
     if (state.screen !== 'home') bookingRef.current?.focus();
@@ -197,76 +251,121 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
     variant.largeText ? 'has-large-text' : '',
     isLargeFull ? 'has-large-headings' : '',
     variant.highContrast ? 'has-high-contrast' : '',
+    !variant.highContrast && (variant.pair === 3 || variant.pair === 5) ? 'has-low-contrast' : '',
     variant.emphasizedAction ? 'has-emphasized-action' : '',
   ].filter(Boolean).join(' ');
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const canAnimate = variant.animatedConfirmation && !reducedMotion;
+  useEffect(() => {
+    if (!canAnimate || loading || state.screen === 'setup') return;
+    const main = bookingRef.current;
+    if (!main) return;
+    const context = gsap.context(() => {
+      gsap.fromTo(main, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: .42, ease: 'power2.out' });
+      const items = main.querySelectorAll('.service-card, .site-card, .quick-links button, .time-grid button, .review-row, .search-result');
+      if (items.length) gsap.fromTo(items, { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: .38, stagger: .055, delay: .1, ease: 'power2.out' });
+      if (state.screen === 'confirmation') {
+        gsap.fromTo(main.querySelectorAll('.confirmation-symbol, .confirmation-screen h1, .confirmation-screen p, .confirmation-screen button'),
+          { opacity: 0, y: 18, scale: .96 }, { opacity: 1, y: 0, scale: 1, duration: .5, stagger: .11, ease: 'back.out(1.25)' });
+      }
+    }, main);
+    return () => context.revert();
+  }, [canAnimate, loading, state.screen, state.pageId]);
+  const navigate = (action: Action) => {
+    if (variant.pair !== 6) { dispatch(action); return; }
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    setLoading(true);
+    timerRef.current = setTimeout(() => { dispatch(action); loadingRef.current = false; setLoading(false); timerRef.current = null; }, 1400);
+  };
   const stepNumber: Partial<Record<Screen, number>> = { service: 1, date: 2, time: 3, review: 4 };
-  const isSitePage = state.screen === 'home' || state.screen === 'info' || state.screen === 'profile';
+  const isSitePage = ['home', 'info', 'profile', 'search', 'login', 'account'].includes(state.screen);
   const isBooking = !isSitePage;
   const openPage = (pageId: string) => {
     if (window.location.pathname !== `/informatie/${pageId}`) window.history.pushState(null, '', `/informatie/${pageId}${window.location.search}`);
-    dispatch({ type: 'OPEN_PAGE', pageId });
+    navigate({ type: 'OPEN_PAGE', pageId });
   };
   const openHome = () => {
     if (window.location.pathname !== '/') window.history.pushState(null, '', `/${window.location.search}`);
-    dispatch({ type: 'OPEN_HOME' });
+    navigate({ type: 'OPEN_HOME' });
   };
   const startBooking = () => {
     if (window.location.pathname !== '/') window.history.pushState(null, '', `/${window.location.search}`);
-    dispatch({ type: 'OPEN_BOOKING' });
+    navigate({ type: 'OPEN_BOOKING' });
+  };
+  const openLogin = () => {
+    if (window.location.pathname !== '/inloggen') window.history.pushState(null, '', `/inloggen${window.location.search}`);
+    setLoginError('');
+    navigate({ type: 'OPEN_LOGIN' });
+  };
+  const submitSearch = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const query = searchTerm.trim();
+    setSubmittedSearch(query);
+    const url = new URL(window.location.href);
+    url.pathname = '/zoeken';
+    if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+    window.history.pushState(null, '', url);
+    navigate({ type: 'OPEN_SEARCH' });
+  };
+  const submitLogin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (loginEmail.trim().toLowerCase() !== FAKE_LOGIN_EMAIL) { setLoginError('Dit oefenadres klopt niet. Controleer het adres op de opdrachtkaart.'); return; }
+    setLoginError('');
+    navigate({ type: 'LOGIN_SUCCESS' });
   };
   const page = state.pageId ? pageById[state.pageId] : null;
 
-  if (state.screen === 'setup') return (
+  if (state.screen === 'setup') return (<>
     <main className="research-setup">
       <div className="research-setup-card">
         <p className="research-setup-kicker">PWS · onderzoeksvoorbereiding</p>
         <h1>Stel de oefenopdracht in</h1>
         <p>Kies de test, variant en opdracht voordat het deelnemersscherm verschijnt.</p>
         <div className="research-setup-fields">
-          <label htmlFor="variant-select">Test en variant</label>
-          <select id="variant-select" value={`${variant.pair}-${variant.version}`} onChange={event => {
-            const [pair, version] = event.target.value.split('-');
-            onVariantChange(Number(pair) as Pair, version as Version, infoTask || scenario.content);
-          }}>
-            {([1, 2, 3, 4, 5] as Pair[]).flatMap(pair => (['A', 'B'] as Version[]).map(version =>
-              <option key={`${pair}-${version}`} value={`${pair}-${version}`}>{pair <= 4 ? `Test ${pair}` : 'Totaalvergelijking'} · {PAIR_NAMES[pair]} · variant {version}</option>
-            ))}
-          </select>
-          <label htmlFor="content-select">Opdrachtversie</label>
-          <select id="content-select" value={infoTask || scenario.content} onChange={event => onVariantChange(variant.pair, variant.version, event.target.value as TaskChoice)}>
-            {(['X', 'Y', 'Z', 'W'] as const).map(code => <option key={code} value={code}>Boeking {code}</option>)}
-            {INFO_TASK_IDS.map(code => <option key={code} value={code}>Siteopdracht {code}: {INFO_TASKS[code].targetPageId}</option>)}
-          </select>
+          <fieldset className="toggle-fieldset"><legend>Onderzoekstest</legend><div className="toggle-grid test-toggles">
+            {([1, 2, 3, 4, 5, 6] as Pair[]).map(pair => <button type="button" key={pair} className="research-toggle" aria-pressed={variant.pair === pair}
+              onClick={() => onVariantChange(pair, variant.version, infoTask || scenario.content)}><strong>Test {pair}</strong><span>{PAIR_NAMES[pair]}</span></button>)}
+          </div></fieldset>
+          <fieldset className="toggle-fieldset"><legend>Variant</legend><div className="toggle-grid two-toggles">
+            {(['A', 'B'] as Version[]).map(version => <button type="button" key={version} className="research-toggle" aria-pressed={variant.version === version}
+              onClick={() => onVariantChange(variant.pair, version, infoTask || scenario.content)}>Variant {version}{variant.pair === 6 ? <span>{version === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span> : null}</button>)}
+          </div></fieldset>
+          <fieldset className="toggle-fieldset"><legend>Opdracht</legend><div className="toggle-grid task-toggles">
+            {(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" key={code} className="research-toggle" aria-pressed={!infoTask && scenario.content === code}
+              onClick={() => onVariantChange(variant.pair, variant.version, code)}>Boeking {code}</button>)}
+            {EXTRA_TASK_IDS.map(code => <button type="button" key={code} className="research-toggle" aria-pressed={infoTask === code}
+              onClick={() => onVariantChange(variant.pair, variant.version, code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}
+          </div></fieldset>
         </div>
         <div className="research-setup-assignment"><strong>Lees aan de deelnemer voor</strong><p>{infoTask ? INFO_TASKS[infoTask].prompt : assignment(scenario)}</p></div>
         {infoTask && <p className="research-setup-answer"><strong>Voor de onderzoeker:</strong> {INFO_TASKS[infoTask].expectedAnswer}</p>}
-        <p className="research-setup-note">{infoTask ? 'Siteopdrachten zijn verkennend en tellen niet mee in de A/B-boekingstests.' : 'De gekozen variant blijft actief tijdens deze oefenboeking.'} De deelnemer ziet de opdracht en onderzoeksinstellingen niet op de praktijksite.</p>
+        <p className="research-setup-note">{infoTask ? 'Deze extra opdracht staat los van de A/B-boekingstests.' : 'De gekozen variant blijft actief tijdens deze oefenboeking.'} De deelnemer ziet de opdracht en onderzoeksinstellingen niet op de praktijksite.</p>
         <button type="button" className="research-setup-start" onClick={() => {
           if (window.location.pathname !== '/') window.history.replaceState(null, '', `/${window.location.search}`);
-          dispatch({ type: 'START_PARTICIPANT' });
+          navigate({ type: 'START_PARTICIPANT' });
         }}>Start deelnemersscherm <span aria-hidden="true">→</span></button>
       </div>
     </main>
-  );
+    {loading && <LoadingScreen skeleton={variant.skeletonLoading} />}
+  </>);
 
   return (
     <div className={rootClass} style={{ '--text-scale': scale / 100 } as React.CSSProperties}>
-      <header className="site-header">
+      {state.screen !== 'confirmation' && <header className="site-header">
         <div className="site-header-inner">
           <button type="button" className="brand brand-button" onClick={openHome}>Fysiotherapie<span className="brand-place"> Valkenswaard</span></button>
+          <form className="site-search" role="search" onSubmit={submitSearch}>
+            <label className="visually-hidden" htmlFor="site-search-input">Zoeken op de site</label>
+            <input id="site-search-input" type="search" placeholder="Waar zoekt u naar?" value={searchTerm} onChange={event => setSearchTerm(event.target.value)} />
+            <button type="submit">Zoeken</button>
+          </form>
+          <button type="button" className="header-login" onClick={openLogin}>{state.loggedIn ? 'Mijn account' : 'Inloggen'}</button>
           <span className="environment-label">Fictieve oefenomgeving</span>
         </div>
         <nav className="site-nav" aria-label="Hoofdnavigatie" key={`${state.screen}-${state.pageId}`}>
           <div className="site-nav-inner">
-            {mainNavigation.map(group => <details className="nav-group" key={group.id}>
-              <summary>{group.label}</summary>
-              <div className="nav-dropdown">
-                <button type="button" className="nav-parent" onClick={() => openPage(group.id)}>Overzicht {group.label} <span aria-hidden="true">→</span></button>
-                {group.children.map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}</button>)}
-              </div>
-            </details>)}
+            {mainNavigation.map(group => <DesktopNavGroup group={group} openPage={openPage} key={group.id} />)}
             <button type="button" className="nav-plain" onClick={() => openPage('tarieven')}>Tarieven</button>
             <button type="button" className="nav-plain" onClick={() => openPage('contact')}>Contact</button>
             {isBooking ? <span className="nav-appointment nav-current" aria-current="page">Afspraak maken</span> : <button type="button" className="nav-appointment" onClick={startBooking}>Afspraak maken</button>}
@@ -283,14 +382,28 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
               </details>)}
               <button type="button" onClick={() => openPage('tarieven')}>Tarieven</button>
               <button type="button" onClick={() => openPage('contact')}>Contact</button>
+              <button type="button" onClick={openLogin}>{state.loggedIn ? 'Mijn account' : 'Inloggen'}</button>
               {isBooking ? <span className="mobile-book mobile-current">U maakt een afspraak</span> : <button type="button" className="mobile-book" onClick={startBooking}>Afspraak maken</button>}
             </div>
           </details>
         </nav>
-      </header>
+      </header>}
 
-      {state.screen === 'home' ? (
-        <main className="site-main">
+      {state.screen === 'confirmation' ? (
+        <main className="confirmation-screen" ref={bookingRef} tabIndex={-1}>
+          <div className="confirmation-full-card" role="status">
+            <span className="confirmation-symbol" aria-hidden="true">✓</span>
+            <p className="eyebrow">Uw oefenafspraak</p>
+            <h1>Uw afspraak is geboekt</h1>
+            <p className="confirmation-lead">U heeft een afspraak voor {state.service?.toLowerCase()} gemaakt.</p>
+            <dl className="confirmation-details"><div><dt>Afspraak</dt><dd>{state.service}</dd></div><div><dt>Datum</dt><dd>{state.date && formatDate(state.date)}</dd></div><div><dt>Tijd</dt><dd>{state.time} uur</dd></div></dl>
+            <p>Dit is een fictieve oefenomgeving. Er wordt geen echte afspraak gemaakt.</p>
+            <div className="confirmation-actions"><button type="button" className="site-primary" onClick={openHome}>Terug naar home</button>
+              <button type="button" className="change-booking" onClick={() => navigate({ type: 'CHANGE_BOOKING' })}>Afspraak wijzigen</button></div>
+          </div>
+        </main>
+      ) : state.screen === 'home' ? (
+        <main className="site-main" ref={bookingRef}>
           <section className="home-main" aria-labelledby="home-title">
             <div className="home-panel">
               <p className="eyebrow">Welkom bij de oefenpraktijk</p>
@@ -298,7 +411,8 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
               <p className="home-intro">Persoonlijke aandacht voor bewegen en dagelijks leven. Ontdek ons fictieve zorgaanbod of plan direct een oefenafspraak.</p>
               <div className="home-actions">
                 <button type="button" className="home-action" onClick={startBooking}>Afspraak maken <span aria-hidden="true">→</span></button>
-                <button type="button" className="home-action" onClick={() => dispatch({ type: 'OPEN_PROFILE' })}>Uw gegevens <span aria-hidden="true">→</span></button>
+                <button type="button" className="home-action" onClick={() => navigate({ type: 'OPEN_PROFILE' })}>Uw gegevens <span aria-hidden="true">→</span></button>
+                <button type="button" className="home-action" onClick={openLogin}>Inloggen <span aria-hidden="true">→</span></button>
               </div>
             </div>
           </section>
@@ -332,6 +446,33 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
             </div>
           </section>
         </main>
+      ) : state.screen === 'search' ? (
+        <main className="site-main search-page" ref={bookingRef} tabIndex={-1}>
+          <div className="search-page-inner"><p className="eyebrow">Zoeken op de site</p><h1>Zoekresultaten</h1>
+            <p>{submittedSearch ? `Resultaten voor “${submittedSearch}”` : 'Typ een zoekterm in de zoekbalk hierboven.'}</p>
+            {submittedSearch && <div className="search-results">{searchPages(submittedSearch).length ? searchPages(submittedSearch).map(result =>
+              <button type="button" className="search-result" key={result.id} onClick={() => openPage(result.id)}>
+                <span>{result.category}</span><strong>{result.title}</strong><span>{result.intro}</span><em>Bekijk de pagina →</em>
+              </button>) : <p role="status">Geen resultaten gevonden. Probeer een andere zoekterm.</p>}</div>}
+          </div>
+        </main>
+      ) : state.screen === 'login' || state.screen === 'account' ? (
+        <main className="login-page" ref={bookingRef} tabIndex={-1}>
+          <div className="login-card"><p className="eyebrow">Fictieve oefenomgeving</p>
+            {state.screen === 'account' ? <><h1>Welkom, Alex Voorbeeld</h1><p>U bent ingelogd in het voorbeeldaccount. Er zijn geen echte gegevens opgehaald of verstuurd.</p>
+              <div className="profile-details"><span>E-mailadres</span><strong>{FAKE_LOGIN_EMAIL}</strong></div>
+              <button type="button" className="action-button" onClick={() => navigate({ type: 'LOGOUT' })}>Uitloggen</button></> : <>
+              <h1>Inloggen</h1><p>Gebruik het fictieve e-mailadres dat u van de onderzoeker heeft gekregen.</p>
+              <form className="login-form" onSubmit={submitLogin} noValidate>
+                <label htmlFor="login-email">E-mailadres</label><input id="login-email" type="email" autoComplete="off" inputMode="email" value={loginEmail}
+                  onChange={event => { setLoginEmail(event.target.value); setLoginError(''); }} placeholder="naam@voorbeeld.invalid" required />
+                {loginError && <p className="validation" role="alert">{loginError}</p>}
+                <button type="submit" className="site-primary">Inloggen</button>
+              </form>
+              <p className="login-note">Dit is een oefenlogin. Gebruik geen persoonlijk e-mailadres.</p>
+            </>}
+          </div>
+        </main>
       ) : state.screen === 'profile' ? (
         <main className="booking-main" ref={bookingRef} tabIndex={-1}>
           <section className="booking-hero" aria-label="Uw gegevens"><div><nav className="breadcrumbs" aria-label="Kruimelpad"><button type="button" onClick={openHome}>Home</button><span aria-hidden="true">/</span><span aria-current="page">Uw gegevens</span></nav><p className="eyebrow">Fysiotherapie Valkenswaard</p><p className="booking-hero-title">Uw gegevens</p><p>Bekijk de voorbeeldgegevens in deze oefenomgeving.</p></div><img src="/images/praktijk.png" alt="Ontvangstruimte van de fictieve praktijk" /></section>
@@ -340,7 +481,7 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
             <h1>Uw gegevens</h1>
             <p>Dit zijn fictieve gegevens voor deze oefenomgeving.</p>
             <div className="profile-details"><span>Naam</span><strong>Alex Voorbeeld</strong></div>
-            <button type="button" className="action-button" onClick={() => dispatch({ type: 'CLOSE_PROFILE' })}>Terug naar start</button>
+            <button type="button" className="action-button" onClick={() => navigate({ type: 'CLOSE_PROFILE' })}>Terug naar start</button>
           </div></div>
         </main>
       ) : state.screen === 'info' && page ? (
@@ -373,7 +514,7 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
             <img src="/images/therapie-hero.png" alt="Fysiotherapeut begeleidt een oudere patiënt" />
           </section>
           <div className="booking-layout"><div className="content-panel">
-            {state.screen !== 'confirmation' && <p className="step-indicator">Stap {stepNumber[state.screen]} van 4</p>}
+            <p className="step-indicator">Stap {stepNumber[state.screen]} van 4</p>
             <h1>{TITLES[state.screen]}</h1>
 
             {state.screen === 'service' && <>
@@ -398,43 +539,36 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
             {state.screen === 'review' && <>
               <p className="instruction">Klopt alles? Bevestig dan uw afspraak.</p>
               <div className="review-list">
-                <div className="review-row"><div><span>Afspraak</span><strong>{state.service}</strong></div><button type="button" onClick={() => dispatch({ type: 'EDIT', screen: 'service' })}>Wijzigen</button></div>
-                <div className="review-row"><div><span>Datum</span><strong>{state.date && formatDate(state.date)}</strong></div><button type="button" onClick={() => dispatch({ type: 'EDIT', screen: 'date' })}>Wijzigen</button></div>
-                <div className="review-row"><div><span>Tijd</span><strong>{state.time} uur</strong></div><button type="button" onClick={() => dispatch({ type: 'EDIT', screen: 'time' })}>Wijzigen</button></div>
+                <div className="review-row"><div><span>Afspraak</span><strong>{state.service}</strong></div><button type="button" onClick={() => navigate({ type: 'EDIT', screen: 'service' })}>Wijzigen</button></div>
+                <div className="review-row"><div><span>Datum</span><strong>{state.date && formatDate(state.date)}</strong></div><button type="button" onClick={() => navigate({ type: 'EDIT', screen: 'date' })}>Wijzigen</button></div>
+                <div className="review-row"><div><span>Tijd</span><strong>{state.time} uur</strong></div><button type="button" onClick={() => navigate({ type: 'EDIT', screen: 'time' })}>Wijzigen</button></div>
               </div>
-            </>}
-
-            {state.screen === 'confirmation' && <>
-              <div className={`confirmation-card ${canAnimate ? 'confirmation-animated' : ''}`} role="status">
-                <span className="confirmation-symbol" aria-hidden="true">✓</span>
-                <div><h2>Uw afspraak is geboekt</h2><p>{state.service} op {state.date && formatDate(state.date)} om {state.time} uur.</p></div>
-              </div>
-              <button type="button" className="change-booking" onClick={() => dispatch({ type: 'CHANGE_BOOKING' })}>Afspraak wijzigen</button>
             </>}
 
             {state.validation && <p className="validation" role="alert">{state.validation}</p>}
-            {state.screen === 'review' || state.screen === 'confirmation' ? (
+            {state.screen === 'review' ? (
               <div className="confirm-area">
-                <button type="button" className="action-button confirm-button" onClick={() => dispatch({ type: 'CONFIRM' })}>Afspraak bevestigen</button>
+                <button type="button" className="action-button confirm-button" onClick={() => navigate({ type: 'CONFIRM' })}>Afspraak bevestigen</button>
               </div>
             ) : null}
-            {state.screen !== 'confirmation' && <Navigation
+            <Navigation
               visible={variant.visibleNavigation} open={state.menuOpen} review={state.screen === 'review'}
               onToggle={() => dispatch({ type: 'TOGGLE_MENU' })}
-              onBack={() => dispatch({ type: 'BACK' })}
-              onNext={() => dispatch({ type: 'NEXT' })}
-            />}
+              onBack={() => navigate({ type: 'BACK' })}
+              onNext={() => navigate({ type: 'NEXT' })}
+            />
           </div><aside className="booking-aside"><img src="/images/praktijk.png" alt="Ontvangstruimte van de fictieve praktijk" /><div><p className="eyebrow">Uw afspraak</p><h2>Overzicht</h2>
             <dl><div><dt>Soort afspraak</dt><dd>{state.service || 'Nog niet gekozen'}</dd></div><div><dt>Datum</dt><dd>{state.date ? formatDate(state.date) : 'Nog niet gekozen'}</dd></div><div><dt>Tijd</dt><dd>{state.time ? `${state.time} uur` : 'Nog niet gekozen'}</dd></div></dl>
             <p>Dit is een oefenomgeving. Er wordt geen echte afspraak gemaakt.</p></div></aside></div>
         </main>
       )}
-      <footer className="site-footer rich-footer"><div className="footer-inner">
+      {state.screen !== 'confirmation' && <footer className="site-footer rich-footer"><div className="footer-inner">
         <div><strong>Fysiotherapie Valkenswaard</strong><p>Fictieve praktijk voor een gebruiksonderzoek. Er wordt geen echte afspraak gemaakt.</p></div>
         <div><strong>Zorgaanbod</strong>{mainNavigation.slice(0, 5).map(group => <button type="button" key={group.id} onClick={() => openPage(group.id)}>{group.label}</button>)}</div>
         <div><strong>Praktisch</strong>{['tarieven', 'locaties', 'contact', 'veelgestelde-vragen'].map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}</button>)}</div>
         <div><strong>Meer</strong>{['over-ons', 'werken-bij', 'nieuws', 'privacy', 'voorwaarden'].map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}</button>)}</div>
-      </div></footer>
+      </div></footer>}
+      {loading && <LoadingScreen skeleton={variant.skeletonLoading} />}
     </div>
   );
 }

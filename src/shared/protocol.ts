@@ -1,7 +1,7 @@
-export type Pair = 1 | 2 | 3 | 4 | 5;
+export type Pair = 1 | 2 | 3 | 4 | 5 | 6;
 export type Version = 'A' | 'B';
 export type ContentVersion = 'X' | 'Y' | 'Z' | 'W';
-export type InfoTaskId = 'I1' | 'I2' | 'I3' | 'I4';
+export type InfoTaskId = 'I1' | 'I2' | 'I3' | 'I4' | 'I5';
 export type TaskChoice = ContentVersion | InfoTaskId;
 export type Service = 'Intake' | 'Behandeling' | 'Oefentherapie' | 'Manuele therapie' | 'Sportfysiotherapie' | 'Ergotherapie';
 export type Time = '09.00' | '10.30' | '13.00' | '14.30';
@@ -28,12 +28,13 @@ export interface VariantConfig {
   highContrast: boolean;
   animatedConfirmation: boolean;
   emphasizedAction: boolean;
+  skeletonLoading: boolean;
 }
 
 export const SERVICES: readonly Service[] = ['Intake', 'Behandeling', 'Oefentherapie', 'Manuele therapie', 'Sportfysiotherapie', 'Ergotherapie'];
 export const TIMES: readonly Time[] = ['09.00', '10.30', '13.00', '14.30'];
 export const PAIR_NAMES: Record<Pair, string> = {
-  1: 'Tekstgrootte', 2: 'Navigatie', 3: 'Contrast', 4: 'Animatie', 5: 'Volledig ontwerp',
+  1: 'Tekstgrootte', 2: 'Navigatie', 3: 'Contrast', 4: 'Animatie', 5: 'Volledig ontwerp', 6: 'Geduld bij laden',
 };
 
 // Elke variant gebruikt hetzelfde boekbare bereik. A en B van één paar
@@ -61,16 +62,24 @@ const scenarios: Record<Pair, Record<ContentVersion, [Service, string, Time]>> =
     X: ['Behandeling', '2027-02-09', '10.30'], Y: ['Oefentherapie', '2027-02-23', '13.00'],
     Z: ['Intake', '2027-02-05', '14.30'], W: ['Manuele therapie', '2027-02-18', '09.00'],
   },
+  6: {
+    X: ['Ergotherapie', '2027-03-03', '09.00'], Y: ['Sportfysiotherapie', '2027-03-11', '13.00'],
+    Z: ['Oefentherapie', '2027-03-19', '10.30'], W: ['Intake', '2027-03-29', '14.30'],
+  },
 };
+
+export const FAKE_LOGIN_EMAIL = 'alex.voorbeeld@example.invalid';
 
 export const INFO_TASKS: Record<InfoTaskId, InfoTask> = {
   I1: { id: 'I1', prompt: 'Zoek de pagina over energiemanagement. Vertel welke twee soorten momenten samen bekeken worden.', targetPageId: 'energiemanagement', expectedAnswer: 'Momenten die energie vragen en momenten van rust.' },
   I2: { id: 'I2', prompt: 'Zoek op de site welke voorbeeldlocatie van de praktijk wordt genoemd.', targetPageId: 'locaties', expectedAnswer: 'Valkenswaard centrum.' },
   I3: { id: 'I3', prompt: 'Zoek op de site of een afspraak in deze oefenomgeving echt is.', targetPageId: 'veelgestelde-vragen', expectedAnswer: 'Nee, de afspraak is fictief.' },
   I4: { id: 'I4', prompt: 'Zoek de pagina Bewegen in een groep en vertel voor wie de activiteit bedoeld is.', targetPageId: 'groepstraining', expectedAnswer: 'Voor mensen die samen met anderen willen oefenen of bewegen.' },
+  I5: { id: 'I5', prompt: 'Log in op de oefensite met het fictieve e-mailadres dat de onderzoeker u geeft.', targetPageId: 'login', expectedAnswer: FAKE_LOGIN_EMAIL },
 };
 
-export const INFO_TASK_IDS = Object.keys(INFO_TASKS) as InfoTaskId[];
+export const INFO_TASK_IDS: InfoTaskId[] = ['I1', 'I2', 'I3', 'I4'];
+export const EXTRA_TASK_IDS: InfoTaskId[] = [...INFO_TASK_IDS, 'I5'];
 
 export function getScenario(pair: Pair, content: ContentVersion): Scenario {
   const [service, date, time] = scenarios[pair][content];
@@ -94,6 +103,7 @@ export function getVariant(pair: Pair, version: Version): VariantConfig {
     highContrast: isB && (pair === 3 || pair === 5),
     animatedConfirmation: isB && (pair === 4 || pair === 5),
     emphasizedAction: isB && pair === 5,
+    skeletonLoading: isB && pair === 6,
   };
 }
 
@@ -114,7 +124,7 @@ export function assignment(scenario: Scenario): string {
 export function parseDemoQuery(search: string): { pair: Pair; version: Version; content: ContentVersion; infoTask: InfoTaskId | null; scale: number } {
   const query = new URLSearchParams(search);
   const pairNumber = Number(query.get('paar'));
-  const pair = ([1, 2, 3, 4, 5].includes(pairNumber) ? pairNumber : 1) as Pair;
+  const pair = ([1, 2, 3, 4, 5, 6].includes(pairNumber) ? pairNumber : 1) as Pair;
   const version = query.get('variant') === 'B' ? 'B' : 'A';
   const content = (['X', 'Y', 'Z', 'W'].includes(query.get('inhoud') || '') ? query.get('inhoud') : 'X') as ContentVersion;
   const candidate = query.get('info') as InfoTaskId | null;

@@ -18,7 +18,7 @@ test('every weekday in all six months is bookable and weekends are closed', () =
 });
 
 test('all booking variants have valid targets in the same month per pair', () => {
-  for (const pair of [1, 2, 3, 4, 5]) {
+  for (const pair of [1, 2, 3, 4, 5, 6]) {
     const scenarios = ['X', 'Y', 'Z', 'W'].map(content => getScenario(pair, content));
     assert.equal(new Set(scenarios.map(item => item.initialMonth)).size, 1);
     assert.equal(new Set(scenarios.map(item => `${item.target.service}/${item.target.date}/${item.target.time}`)).size, 4);
@@ -35,9 +35,19 @@ test('four isolated comparisons change only their measured setting', () => {
   }
 });
 
+test('loading comparison keeps the same booking design and changes only the loading image', () => {
+  const a = getVariant(6, 'A');
+  const b = getVariant(6, 'B');
+  const changed = Object.keys(a).filter(key => a[key] !== b[key] && key !== 'version');
+  assert.deepEqual(changed, ['skeletonLoading']);
+  assert.equal(a.skeletonLoading, false);
+  assert.equal(b.skeletonLoading, true);
+});
+
 test('researcher links retain every booking and information task', () => {
   for (const content of ['X', 'Y', 'Z', 'W']) {
     assert.equal(parseDemoQuery(`?paar=5&variant=B&inhoud=${content}`).content, content);
+    assert.equal(parseDemoQuery(`?paar=6&variant=B&inhoud=${content}`).pair, 6);
   }
   for (const id of Object.keys(INFO_TASKS)) {
     assert.equal(parseDemoQuery(`?info=${id}`).infoTask, id);
