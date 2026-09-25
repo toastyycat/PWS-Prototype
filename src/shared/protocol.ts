@@ -1,14 +1,23 @@
 export type Pair = 1 | 2 | 3 | 4 | 5;
 export type Version = 'A' | 'B';
-export type ContentVersion = 'X' | 'Y';
+export type ContentVersion = 'X' | 'Y' | 'Z' | 'W';
+export type InfoTaskId = 'I1' | 'I2' | 'I3' | 'I4';
+export type TaskChoice = ContentVersion | InfoTaskId;
 export type Service = 'Intake' | 'Behandeling' | 'Oefentherapie' | 'Manuele therapie' | 'Sportfysiotherapie' | 'Ergotherapie';
 export type Time = '09.00' | '10.30' | '13.00' | '14.30';
 
 export interface Scenario {
   pair: Pair;
   content: ContentVersion;
-  dates: readonly string[];
+  initialMonth: string;
   target: { service: Service; date: string; time: Time };
+}
+
+export interface InfoTask {
+  id: InfoTaskId;
+  prompt: string;
+  targetPageId: string;
+  expectedAnswer: string;
 }
 
 export interface VariantConfig {
@@ -27,27 +36,53 @@ export const PAIR_NAMES: Record<Pair, string> = {
   1: 'Tekstgrootte', 2: 'Navigatie', 3: 'Contrast', 4: 'Animatie', 5: 'Volledig ontwerp',
 };
 
-const dates = {
-  1: [5, 6, 7, 8],
-  2: [12, 13, 14, 15],
-  3: [19, 20, 21, 22],
-  4: [26, 27, 28, 29],
-  5: [2, 9, 16, 23],
-} satisfies Record<Pair, number[]>;
+// Elke variant gebruikt hetzelfde boekbare bereik. A en B van één paar
+// krijgen opdrachten in dezelfde doelmaand.
+export const BOOKING_MONTHS = ['2026-10', '2026-11', '2026-12', '2027-01', '2027-02', '2027-03'] as const;
 
-const targets: Record<Pair, Record<ContentVersion, [Service, number, Time]>> = {
-  1: { X: ['Intake', 6, '10.30'], Y: ['Behandeling', 8, '13.00'] },
-  2: { X: ['Behandeling', 12, '14.30'], Y: ['Oefentherapie', 14, '09.00'] },
-  3: { X: ['Oefentherapie', 22, '13.00'], Y: ['Intake', 20, '10.30'] },
-  4: { X: ['Intake', 28, '09.00'], Y: ['Behandeling', 26, '14.30'] },
-  5: { X: ['Behandeling', 9, '10.30'], Y: ['Oefentherapie', 23, '13.00'] },
+const scenarios: Record<Pair, Record<ContentVersion, [Service, string, Time]>> = {
+  1: {
+    X: ['Intake', '2026-10-06', '10.30'], Y: ['Behandeling', '2026-10-08', '13.00'],
+    Z: ['Oefentherapie', '2026-10-19', '09.00'], W: ['Manuele therapie', '2026-10-28', '14.30'],
+  },
+  2: {
+    X: ['Behandeling', '2026-11-12', '14.30'], Y: ['Oefentherapie', '2026-11-16', '09.00'],
+    Z: ['Ergotherapie', '2026-11-24', '13.00'], W: ['Sportfysiotherapie', '2026-11-27', '10.30'],
+  },
+  3: {
+    X: ['Oefentherapie', '2026-12-22', '13.00'], Y: ['Intake', '2026-12-24', '10.30'],
+    Z: ['Manuele therapie', '2026-12-07', '09.00'], W: ['Behandeling', '2026-12-16', '14.30'],
+  },
+  4: {
+    X: ['Intake', '2027-01-28', '09.00'], Y: ['Behandeling', '2027-01-26', '14.30'],
+    Z: ['Ergotherapie', '2027-01-08', '10.30'], W: ['Sportfysiotherapie', '2027-01-20', '13.00'],
+  },
+  5: {
+    X: ['Behandeling', '2027-02-09', '10.30'], Y: ['Oefentherapie', '2027-02-23', '13.00'],
+    Z: ['Intake', '2027-02-05', '14.30'], W: ['Manuele therapie', '2027-02-18', '09.00'],
+  },
 };
 
-const isoDate = (day: number) => `2026-10-${String(day).padStart(2, '0')}`;
+export const INFO_TASKS: Record<InfoTaskId, InfoTask> = {
+  I1: { id: 'I1', prompt: 'Zoek de pagina over energiemanagement. Vertel welke twee soorten momenten samen bekeken worden.', targetPageId: 'energiemanagement', expectedAnswer: 'Momenten die energie vragen en momenten van rust.' },
+  I2: { id: 'I2', prompt: 'Zoek op de site welke voorbeeldlocatie van de praktijk wordt genoemd.', targetPageId: 'locaties', expectedAnswer: 'Valkenswaard centrum.' },
+  I3: { id: 'I3', prompt: 'Zoek op de site of een afspraak in deze oefenomgeving echt is.', targetPageId: 'veelgestelde-vragen', expectedAnswer: 'Nee, de afspraak is fictief.' },
+  I4: { id: 'I4', prompt: 'Zoek de pagina Bewegen in een groep en vertel voor wie de activiteit bedoeld is.', targetPageId: 'groepstraining', expectedAnswer: 'Voor mensen die samen met anderen willen oefenen of bewegen.' },
+};
+
+export const INFO_TASK_IDS = Object.keys(INFO_TASKS) as InfoTaskId[];
 
 export function getScenario(pair: Pair, content: ContentVersion): Scenario {
-  const [service, day, time] = targets[pair][content];
-  return { pair, content, dates: dates[pair].map(isoDate), target: { service, date: isoDate(day), time } };
+  const [service, date, time] = scenarios[pair][content];
+  return { pair, content, initialMonth: date.slice(0, 7), target: { service, date, time } };
+}
+
+export function isBookableDate(iso: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso) || !BOOKING_MONTHS.includes(iso.slice(0, 7) as typeof BOOKING_MONTHS[number])) return false;
+  const date = new Date(`${iso}T12:00:00Z`);
+  if (Number.isNaN(date.valueOf()) || date.toISOString().slice(0, 10) !== iso) return false;
+  const day = date.getUTCDay();
+  return day !== 0 && day !== 6;
 }
 
 export function getVariant(pair: Pair, version: Version): VariantConfig {
@@ -63,9 +98,12 @@ export function getVariant(pair: Pair, version: Version): VariantConfig {
 }
 
 export function formatDate(iso: string): string {
-  const day = Number(iso.slice(-2));
-  const weekday = new Intl.DateTimeFormat('nl-NL', { weekday: 'long', timeZone: 'UTC' }).format(new Date(Date.UTC(2026, 9, day)));
-  return `${weekday} ${day} oktober 2026`;
+  return new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`));
+}
+
+export function formatMonth(month: string): string {
+  const [year, value] = month.split('-').map(Number);
+  return new Intl.DateTimeFormat('nl-NL', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(Date.UTC(year, value - 1, 1)));
 }
 
 export function assignment(scenario: Scenario): string {
@@ -73,13 +111,15 @@ export function assignment(scenario: Scenario): string {
   return `Maak een afspraak voor ${service.toLowerCase()} op ${formatDate(date)} om ${time} uur.`;
 }
 
-export function parseDemoQuery(search: string): { pair: Pair; version: Version; content: ContentVersion; scale: number } {
+export function parseDemoQuery(search: string): { pair: Pair; version: Version; content: ContentVersion; infoTask: InfoTaskId | null; scale: number } {
   const query = new URLSearchParams(search);
   const pairNumber = Number(query.get('paar'));
   const pair = ([1, 2, 3, 4, 5].includes(pairNumber) ? pairNumber : 1) as Pair;
   const version = query.get('variant') === 'B' ? 'B' : 'A';
-  const content = query.get('inhoud') === 'Y' ? 'Y' : 'X';
+  const content = (['X', 'Y', 'Z', 'W'].includes(query.get('inhoud') || '') ? query.get('inhoud') : 'X') as ContentVersion;
+  const candidate = query.get('info') as InfoTaskId | null;
+  const infoTask = candidate && candidate in INFO_TASKS ? candidate : null;
   const scaleNumber = Number(query.get('vergroting'));
   const scale = [100, 125, 150, 200].includes(scaleNumber) ? scaleNumber : 100;
-  return { pair, version, content, scale };
+  return { pair, version, content, infoTask, scale };
 }

@@ -1,10 +1,10 @@
-import { useEffect, useReducer, useRef } from 'react';
+import { useEffect, useReducer, useRef, useState } from 'react';
 import type { KeyboardEvent } from 'react';
-import type { Scenario, Service, Time, VariantConfig } from '../shared/protocol';
-import { formatDate, SERVICES, TIMES } from '../shared/protocol';
+import type { InfoTaskId, Pair, Scenario, Service, TaskChoice, Time, VariantConfig, Version } from '../shared/protocol';
+import { assignment, BOOKING_MONTHS, formatDate, formatMonth, INFO_TASKS, INFO_TASK_IDS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
 import { mainNavigation, pageById } from './siteContent';
 
-type Screen = 'home' | 'info' | 'profile' | 'service' | 'date' | 'time' | 'review' | 'confirmation';
+type Screen = 'setup' | 'home' | 'info' | 'profile' | 'service' | 'date' | 'time' | 'review' | 'confirmation';
 type ChoiceScreen = 'service' | 'date' | 'time';
 
 interface BookingState {
@@ -20,7 +20,7 @@ interface BookingState {
 }
 
 type Action =
-  | { type: 'OPEN_BOOKING' | 'OPEN_HOME' | 'OPEN_PROFILE' | 'CLOSE_PROFILE' | 'TOGGLE_MENU' | 'BACK' | 'NEXT' | 'CONFIRM' | 'CHANGE_BOOKING' }
+  | { type: 'START_PARTICIPANT' | 'OPEN_BOOKING' | 'OPEN_HOME' | 'OPEN_PROFILE' | 'CLOSE_PROFILE' | 'TOGGLE_MENU' | 'BACK' | 'NEXT' | 'CONFIRM' | 'CHANGE_BOOKING' }
   | { type: 'OPEN_PAGE'; pageId: string }
   | { type: 'NAVIGATE'; screen: 'home' | 'info'; pageId: string | null }
   | { type: 'SELECT_SERVICE'; service: Service }
@@ -33,14 +33,14 @@ function readSiteRoute(): { screen: 'home' | 'info'; pageId: string | null } {
   return match && pageById[match[1]] ? { screen: 'info', pageId: match[1] } : { screen: 'home', pageId: null };
 }
 
-const initialRoute = readSiteRoute();
 const initialState: BookingState = {
-  screen: initialRoute.screen, pageId: initialRoute.pageId, profileReturn: 'home', service: null, date: null, time: null,
+  screen: 'setup', pageId: null, profileReturn: 'home', service: null, date: null, time: null,
   editReturn: false, menuOpen: false, validation: '',
 };
 
 function reducer(state: BookingState, action: Action): BookingState {
   switch (action.type) {
+    case 'START_PARTICIPANT': return { ...state, screen: 'home', pageId: null, service: null, date: null, time: null, editReturn: false, menuOpen: false, validation: '' };
     case 'NAVIGATE': return { ...state, screen: action.screen, pageId: action.pageId, menuOpen: false, validation: '' };
     case 'OPEN_HOME': return { ...state, screen: 'home', pageId: null, menuOpen: false, validation: '' };
     case 'OPEN_PAGE': return { ...state, screen: 'info', pageId: action.pageId, menuOpen: false, validation: '' };
@@ -78,7 +78,7 @@ function reducer(state: BookingState, action: Action): BookingState {
   }
 }
 
-const TITLES: Record<Exclude<Screen, 'home' | 'profile'>, string> = {
+const TITLES: Record<Exclude<Screen, 'setup' | 'home' | 'profile'>, string> = {
   info: 'Informatie',
   service: 'Welke afspraak wilt u maken?',
   date: 'Kies een datum',
@@ -90,10 +90,10 @@ const TITLES: Record<Exclude<Screen, 'home' | 'profile'>, string> = {
 const serviceDetails: Record<Service, { description: string; image: string }> = {
   Intake: { description: 'Een eerste gesprek over uw vraag en uw wensen.', image: '/images/praktijk.png' },
   Behandeling: { description: 'Een vervolgafspraak met persoonlijke begeleiding.', image: '/images/therapie-hero.png' },
-  Oefentherapie: { description: 'Samen oefenen om makkelijker te bewegen.', image: '/images/bewegen.png' },
+  Oefentherapie: { description: 'Samen oefenen om makkelijker te bewegen.', image: '/images/groep-bewegen.webp' },
   'Manuele therapie': { description: 'Aandacht voor het bewegen van gewrichten.', image: '/images/manuele-therapie.png' },
   Sportfysiotherapie: { description: 'Begeleiding bij terugkeer naar sport en bewegen.', image: '/images/sportfysiotherapie.png' },
-  Ergotherapie: { description: 'Ondersteuning bij dagelijkse handelingen.', image: '/images/ergotherapie.png' },
+  Ergotherapie: { description: 'Ondersteuning bij dagelijkse handelingen.', image: '/images/dagelijks-bewegen.webp' },
 };
 
 function ServiceCard({ service, selected, onClick }: { service: Service; selected: boolean; onClick: () => void }) {
@@ -113,11 +113,16 @@ function ChoiceCard({ label, selected, onClick }: { label: string; selected: boo
   );
 }
 
-function Calendar({ available, selected, onSelect }: { available: readonly string[]; selected: string | null; onSelect: (date: string) => void }) {
+function Calendar({ initialMonth, selected, onSelect }: { initialMonth: string; selected: string | null; onSelect: (date: string) => void }) {
+  const [month, setMonth] = useState(selected?.slice(0, 7) || initialMonth);
   const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const monthIndex = BOOKING_MONTHS.indexOf(month as typeof BOOKING_MONTHS[number]);
+  const [year, monthNumber] = month.split('-').map(Number);
+  const firstWeekday = (new Date(Date.UTC(year, monthNumber - 1, 1)).getUTCDay() + 6) % 7;
+  const daysInMonth = new Date(Date.UTC(year, monthNumber, 0)).getUTCDate();
   const cells = Array.from({ length: 42 }, (_, index) => {
-    const day = index - 2;
-    return day >= 1 && day <= 31 ? `2026-10-${String(day).padStart(2, '0')}` : null;
+    const day = index - firstWeekday + 1;
+    return day >= 1 && day <= daysInMonth ? `${month}-${String(day).padStart(2, '0')}` : null;
   });
   const onKeyDown = (event: KeyboardEvent<HTMLButtonElement>, date: string) => {
     const increment: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 };
@@ -125,19 +130,24 @@ function Calendar({ available, selected, onSelect }: { available: readonly strin
     event.preventDefault();
     const day = Number(date.slice(-2));
     let next = day + increment[event.key];
-    while (next >= 1 && next <= 31) {
-      const key = `2026-10-${String(next).padStart(2, '0')}`;
-      if (available.includes(key)) { buttonRefs.current[key]?.focus(); return; }
+    while (next >= 1 && next <= daysInMonth) {
+      const key = `${month}-${String(next).padStart(2, '0')}`;
+      if (isBookableDate(key)) { buttonRefs.current[key]?.focus(); return; }
       next += increment[event.key];
     }
   };
   return (
-    <div className="calendar" aria-label="Beschikbare dagen in oktober 2026">
-      <h2 className="calendar-title">Oktober 2026</h2>
-      <div className="calendar-grid" role="grid" aria-label="Oktober 2026">
+    <div className="calendar" aria-label="Kies een werkdag">
+      <div className="calendar-toolbar">
+        <button type="button" className="calendar-month-button" disabled={monthIndex <= 0} onClick={() => setMonth(BOOKING_MONTHS[monthIndex - 1])} aria-label="Vorige maand">←</button>
+        <h2 className="calendar-title" aria-live="polite">{formatMonth(month)}</h2>
+        <button type="button" className="calendar-month-button" disabled={monthIndex >= BOOKING_MONTHS.length - 1} onClick={() => setMonth(BOOKING_MONTHS[monthIndex + 1])} aria-label="Volgende maand">→</button>
+      </div>
+      <p className="calendar-hint">Alle werkdagen zijn beschikbaar. Weekenden zijn gesloten.</p>
+      <div className="calendar-grid" role="grid" aria-label={formatMonth(month)}>
         {['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo'].map(day => <span className="weekday" key={day} role="columnheader">{day}</span>)}
         {cells.map((date, index) => {
-          const active = Boolean(date && available.includes(date));
+          const active = Boolean(date && isBookableDate(date));
           return date ? (
             <button
               key={date} type="button" role="gridcell" ref={element => { buttonRefs.current[date] = element; }}
@@ -169,7 +179,7 @@ function Navigation({ visible, open, onToggle, onBack, onNext, review }: {
   );
 }
 
-export function BookingApp({ scenario, variant, scale }: { scenario: Scenario; variant: VariantConfig; scale: number }) {
+export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange }: { scenario: Scenario; infoTask: InfoTaskId | null; variant: VariantConfig; scale: number; onVariantChange: (pair: Pair, version: Version, task: TaskChoice) => void }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const bookingRef = useRef<HTMLElement | null>(null);
   useEffect(() => {
@@ -207,6 +217,39 @@ export function BookingApp({ scenario, variant, scale }: { scenario: Scenario; v
     dispatch({ type: 'OPEN_BOOKING' });
   };
   const page = state.pageId ? pageById[state.pageId] : null;
+
+  if (state.screen === 'setup') return (
+    <main className="research-setup">
+      <div className="research-setup-card">
+        <p className="research-setup-kicker">PWS · onderzoeksvoorbereiding</p>
+        <h1>Stel de oefenopdracht in</h1>
+        <p>Kies de test, variant en opdracht voordat het deelnemersscherm verschijnt.</p>
+        <div className="research-setup-fields">
+          <label htmlFor="variant-select">Test en variant</label>
+          <select id="variant-select" value={`${variant.pair}-${variant.version}`} onChange={event => {
+            const [pair, version] = event.target.value.split('-');
+            onVariantChange(Number(pair) as Pair, version as Version, infoTask || scenario.content);
+          }}>
+            {([1, 2, 3, 4, 5] as Pair[]).flatMap(pair => (['A', 'B'] as Version[]).map(version =>
+              <option key={`${pair}-${version}`} value={`${pair}-${version}`}>{pair <= 4 ? `Test ${pair}` : 'Totaalvergelijking'} · {PAIR_NAMES[pair]} · variant {version}</option>
+            ))}
+          </select>
+          <label htmlFor="content-select">Opdrachtversie</label>
+          <select id="content-select" value={infoTask || scenario.content} onChange={event => onVariantChange(variant.pair, variant.version, event.target.value as TaskChoice)}>
+            {(['X', 'Y', 'Z', 'W'] as const).map(code => <option key={code} value={code}>Boeking {code}</option>)}
+            {INFO_TASK_IDS.map(code => <option key={code} value={code}>Siteopdracht {code}: {INFO_TASKS[code].targetPageId}</option>)}
+          </select>
+        </div>
+        <div className="research-setup-assignment"><strong>Lees aan de deelnemer voor</strong><p>{infoTask ? INFO_TASKS[infoTask].prompt : assignment(scenario)}</p></div>
+        {infoTask && <p className="research-setup-answer"><strong>Voor de onderzoeker:</strong> {INFO_TASKS[infoTask].expectedAnswer}</p>}
+        <p className="research-setup-note">{infoTask ? 'Siteopdrachten zijn verkennend en tellen niet mee in de A/B-boekingstests.' : 'De gekozen variant blijft actief tijdens deze oefenboeking.'} De deelnemer ziet de opdracht en onderzoeksinstellingen niet op de praktijksite.</p>
+        <button type="button" className="research-setup-start" onClick={() => {
+          if (window.location.pathname !== '/') window.history.replaceState(null, '', `/${window.location.search}`);
+          dispatch({ type: 'START_PARTICIPANT' });
+        }}>Start deelnemersscherm <span aria-hidden="true">→</span></button>
+      </div>
+    </main>
+  );
 
   return (
     <div className={rootClass} style={{ '--text-scale': scale / 100 } as React.CSSProperties}>
@@ -269,11 +312,24 @@ export function BookingApp({ scenario, variant, scale }: { scenario: Scenario; v
             </div>
           </section>
           <section className="feature-band">
-            <img src="/images/bewegen.png" alt="Oudere vrouw oefent samen met een fysiotherapeut" />
+            <img src="/images/groep-bewegen.webp" alt="Diverse groep doet zittende beweegoefeningen" />
             <div><p className="eyebrow">Verdieping</p><h2>Vind uw weg in ons aanbod</h2><p>Naast de zorggebieden vindt u specialisaties en themapagina’s. Zo kunt u via verschillende routes informatie vinden.</p><button type="button" className="text-link" onClick={() => openPage('expertisecentra')}>Bekijk de expertisecentra <span aria-hidden="true">→</span></button></div>
           </section>
           <section className="site-section practical-section"><div className="section-heading"><div><p className="eyebrow">Goed om te weten</p><h2>Praktische informatie</h2></div></div>
             <div className="quick-links">{['tarieven', 'locaties', 'veelgestelde-vragen', 'contact'].map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}<span aria-hidden="true">→</span></button>)}</div>
+          </section>
+          <section className="site-section discovery-section" aria-labelledby="discovery-title">
+            <div className="section-heading"><div><p className="eyebrow">Verder ontdekken</p><h2 id="discovery-title">Meer op deze site</h2></div><p>Een grotere praktijksite heeft ook verhalen, achtergrondinformatie en praktische antwoorden.</p></div>
+            <div className="site-card-grid">
+              {([
+                { id: 'nieuws', image: '/images/groep-bewegen.webp', label: 'Nieuws en bijeenkomsten' },
+                { id: 'team', image: '/images/gesprek-therapie.webp', label: 'Maak kennis met het team' },
+                { id: 'veelgestelde-vragen', image: '/images/dagelijks-bewegen.webp', label: 'Veelgestelde vragen' },
+              ] as const).map(item => <button type="button" className="site-card discovery-card" key={item.id} onClick={() => openPage(item.id)}>
+                <img src={item.image} alt="" loading="lazy" />
+                <span className="site-card-body"><strong>{item.label}</strong><span>{pageById[item.id].intro}</span><em>Bekijk de pagina <span aria-hidden="true">→</span></em></span>
+              </button>)}
+            </div>
           </section>
         </main>
       ) : state.screen === 'profile' ? (
@@ -329,7 +385,7 @@ export function BookingApp({ scenario, variant, scale }: { scenario: Scenario; v
 
             {state.screen === 'date' && <>
               <p className="instruction">Selecteer een beschikbare datum.</p>
-              <Calendar available={scenario.dates} selected={state.date} onSelect={date => dispatch({ type: 'SELECT_DATE', date })} />
+              <Calendar initialMonth={scenario.initialMonth} selected={state.date} onSelect={date => dispatch({ type: 'SELECT_DATE', date })} />
             </>}
 
             {state.screen === 'time' && <>

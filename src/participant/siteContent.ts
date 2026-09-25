@@ -13,7 +13,7 @@ export const sitePages: SitePage[] = [
   {
     id: 'fysiotherapie', title: 'Fysiotherapie', category: 'Zorgaanbod',
     intro: 'Bewegen gaat niet altijd vanzelf. In onze fictieve praktijk bekijken we samen welke begeleiding bij uw vraag past.',
-    image: '/images/therapie-hero.png',
+    image: '/images/gesprek-therapie.webp',
     sections: [
       { title: 'Eerst kennismaken', text: 'Tijdens een intake bespreekt u wat u in het dagelijks leven wilt kunnen doen. Daarna kiest u samen een passende vervolgstap.' },
       { title: 'Behandeling en oefenen', text: 'Een afspraak kan bestaan uit uitleg, behandeling of oefeningen. De inhoud hangt af van uw situatie en uw doelen.' },
@@ -23,16 +23,16 @@ export const sitePages: SitePage[] = [
   {
     id: 'manuele-therapie', title: 'Manuele therapie', parent: 'fysiotherapie', category: 'Specialisatie',
     intro: 'Een pagina over bewegen van gewrichten en de beperkingen die mensen daarbij kunnen ervaren.',
-    image: '/images/therapie-hero.png',
+    image: '/images/gesprek-therapie.webp',
     sections: [
       { title: 'Waar gaat het over?', text: 'Soms voelt een beweging stijf of pijnlijk. Een therapeut luistert naar uw verhaal en onderzoekt welke bewegingen lastig zijn.' },
-      { title: 'Een afspraak plannen', text: 'In dit prototype kiest u bij het boeken uit Intake, Behandeling of Oefentherapie. Er is geen aparte keuze voor een specialisatie.' },
+      { title: 'Een afspraak plannen', text: 'In dit prototype kunt u een fictieve afspraak voor manuele therapie kiezen. Er vindt geen echte behandeling plaats.' },
     ], links: ['fysiotherapie', 'nekcentrum', 'fysio-vergoeding'],
   },
   {
     id: 'sportfysiotherapie', title: 'Sportfysiotherapie', parent: 'fysiotherapie', category: 'Specialisatie',
     intro: 'Begeleiding bij het hervatten van sporten en bewegen na een blessure of een periode van rust.',
-    image: '/images/bewegen.png',
+    image: '/images/groep-bewegen.webp',
     sections: [
       { title: 'Van dagelijks bewegen naar sport', text: 'De begeleiding kan beginnen bij gewone bewegingen en geleidelijk aansluiten op wat u graag weer wilt doen.' },
       { title: 'Wat neemt u mee?', text: 'Voor een kennismaking is het handig om te bedenken welke activiteit u mist en welke vragen u wilt stellen.' },
@@ -41,7 +41,7 @@ export const sitePages: SitePage[] = [
   {
     id: 'geriatrie', title: 'Fysiotherapie voor ouderen', parent: 'fysiotherapie', category: 'Specialisatie',
     intro: 'Aandacht voor veilig en prettig bewegen als dagelijkse activiteiten meer moeite kosten.',
-    image: '/images/bewegen.png',
+    image: '/images/groep-bewegen.webp',
     sections: [
       { title: 'Uw eigen doelen', text: 'Het kan gaan om wandelen, opstaan, traplopen of een hobby. Uw persoonlijke doel is het vertrekpunt van het gesprek.' },
       { title: 'Rustig opbouwen', text: 'Een therapeut bespreekt met u welk tempo en welke oefeningen haalbaar voelen.' },
@@ -58,7 +58,7 @@ export const sitePages: SitePage[] = [
   {
     id: 'ergotherapie', title: 'Ergotherapie', category: 'Zorgaanbod',
     intro: 'Ergotherapie kijkt naar dagelijkse handelingen: thuis, op het werk en onderweg.',
-    image: '/images/praktijk.png',
+    image: '/images/dagelijks-bewegen.webp',
     sections: [
       { title: 'Dagelijks leven', text: 'Samen onderzoekt u welke activiteiten moeilijk gaan en wat daarin voor u het belangrijkst is.' },
       { title: 'Mogelijke begeleiding', text: 'Dat kan gaan over een andere werkwijze, verdeling van energie of het gebruik van hulpmiddelen.' },
@@ -146,7 +146,7 @@ export const sitePages: SitePage[] = [
     image: '/images/bewegen.png',
     sections: [
       { title: 'Bewegen op uw manier', text: 'De ene persoon wil sterker worden, de ander zoekt een vast beweegmoment. Hier vindt u verschillende onderwerpen.' },
-      { title: 'Een passend begin', text: 'De pagina’s zijn bedoeld om het aanbod te verkennen. Boekingen in dit prototype blijven beperkt tot de drie fictieve afspraaksoorten.' },
+      { title: 'Een passend begin', text: 'De pagina’s zijn bedoeld om het aanbod te verkennen. Boekingen in dit prototype gebruiken zes fictieve afspraaksoorten.' },
     ], links: ['oefentherapie', 'groepstraining', 'leefstijlcoaching'],
   },
   {
@@ -159,7 +159,8 @@ export const sitePages: SitePage[] = [
   {
     id: 'groepstraining', title: 'Bewegen in een groep', parent: 'leefstijl', category: 'Bewegen',
     intro: 'Samen bewegen in een kleine groep kan een prettige stok achter de deur zijn.',
-    sections: [{ title: 'Voorbeeldprogramma', text: 'Deze pagina laat zien hoe groepsactiviteiten op een praktijksite een eigen plek kunnen krijgen. De oefenboeking bevat geen groepslessen.' }],
+    image: '/images/groep-bewegen.webp',
+    sections: [{ title: 'Voorbeeldprogramma', text: 'Deze voorbeeldactiviteit is bedoeld voor mensen die samen met anderen willen oefenen of bewegen. De oefenboeking bevat geen groepslessen.' }],
     links: ['leefstijl', 'oefentherapie'],
   },
   {
@@ -228,7 +229,7 @@ export const sitePages: SitePage[] = [
   {
     id: 'over-ons', title: 'Over de praktijk', category: 'Over ons',
     intro: 'Maak kennis met de fictieve praktijk achter dit onderzoeksprototype.',
-    image: '/images/praktijk.png',
+    image: '/images/gesprek-therapie.webp',
     sections: [
       { title: 'Persoonlijke aandacht', text: 'De voorbeeldpraktijk brengt meerdere zorggebieden onder één dak. De teksten zijn geschreven voor het testen van navigatie en leesbaarheid.' },
       { title: 'Een oefenomgeving', text: 'Namen, locaties en afspraken op deze site zijn fictief. Er worden geen echte persoonsgegevens gevraagd.' },

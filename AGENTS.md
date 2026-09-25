@@ -2,6 +2,10 @@
 
 Dit bestand is de overdracht aan het model dat de applicatie gaat bouwen. Het beschrijft een onderzoeksprototype voor fictieve fysiotherapieafspraken met React, TypeScript en Tailwind CSS. De gebruikerskeuzes zijn op 23 september 2026 besproken en vastgelegd. Tijdens het opstellen van dit bestand is geen applicatiecode gemaakt.
 
+## Aanvulling 24 september 2026
+
+De gebruiker heeft de volgende latere keuzes gemaakt; deze vervangen tegenstrijdige passages hieronder. De onderzoeker kiest vóór het deelnemersscherm een van de boekingsversies X/Y/Z/W of een siteopdracht I1/I2/I3/I4. Deelnemers zien daarna een uitgebreidere praktijksite met meerdere zorggebieden, informatiepagina’s, gevarieerde foto’s en geloofwaardige omwegen. Per deelnemer zijn tien boekingen en twee verkennende informatiezoekopdrachten gepland. Alleen de boekingen worden in de vijf A/B-paren vergeleken. De kalender biedt zes maanden van oktober 2026 tot en met maart 2027 met iedere werkdag boekbaar en weekenden niet boekbaar. De actuele Word-methode is op deze keuzes aangepast. `INHOUD_EN_TESTROUTES.md` en `src/shared/protocol.ts` beschrijven de huidige routes en scenario’s. Het onderzoekspaneel is op dit moment een frontendvoorbeeld zonder gegevensopslag of apparaatkoppeling.
+
 ## 1. Opdracht en bronnen
 
 Bouw binnen deze map een werkende Nederlandse webapp voor ouderen van 65 jaar en ouder met weinig digitale ervaring. Een deelnemer boekt fictieve afspraken op een smartphone of desktop. Een onderzoeker bedient op een aparte laptop het onderzoekspaneel. Beide apparaten gebruiken dezelfde wifi of hotspot; de laptop draait de lokale server.
