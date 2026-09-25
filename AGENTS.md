@@ -4,6 +4,8 @@ Dit bestand is de overdracht aan het model dat de applicatie gaat bouwen. Het be
 
 ## Aanvulling 24 september 2026
 
+Aanvulling 25 september 2026: in het opdrachtmenu kunnen meerdere knoppen tegelijk ingeschakeld zijn. De onderzoeker markeert welke opdracht bij het starten opent. De overige aangevinkte opdrachten blijven in de URL bewaard en krijgen in het onderzoekspaneel elk een eigen demolink.
+
 De gebruiker heeft latere keuzes gemaakt; deze vervangen tegenstrijdige passages hieronder. De onderzoeker kiest vóór het deelnemersscherm met schakelknoppen een van zes tests, A/B, een boekingsversie X/Y/Z/W of een extra opdracht I1/I2/I3/I4/I5. Deelnemers zien daarna een uitgebreidere praktijksite met meerdere zorggebieden, informatiepagina’s, gevarieerde foto’s, zoekbalk, fictief inloggen en geloofwaardige omwegen. Per deelnemer zijn twaalf boekingen, twee verkennende informatiezoekopdrachten en een inlogopdracht gepland. Alleen de boekingen worden in de zes A/B-paren vergeleken. Test 6 vergelijkt een leeg laadscherm met een skeletonscherm bij gelijke wachttijd van 1,4 seconde. De kalender biedt zes maanden van oktober 2026 tot en met maart 2027 met iedere werkdag boekbaar en weekenden niet boekbaar. De actuele Word-methode is op deze keuzes aangepast. `INHOUD_EN_TESTROUTES.md` en `src/shared/protocol.ts` beschrijven de huidige routes en scenario’s. Het onderzoekspaneel is op dit moment een frontendvoorbeeld zonder gegevensopslag of apparaatkoppeling.
 
 ## 1. Opdracht en bronnen

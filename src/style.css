@@ -138,9 +138,17 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .research-setup-fields select { width: 100%; min-width: 0; min-height: 56px; padding: 10px 12px; border: 1px solid #9e8d7b; border-radius: 12px; background: #fff; color: var(--ink); }
 .research-setup-assignment { margin-top: 24px; padding: 18px; border-left: 4px solid var(--accent); border-radius: 0 12px 12px 0; background: #f2e8dc; }
 .research-setup-assignment p { margin: 8px 0 0; font-size: 1.125rem; }
+.research-setup-assignments { margin-top: 24px; }
+.research-setup-assignments h2, .demo-task-list h3 { margin: 0 0 10px; font-size: 1.1rem; }
+.research-setup-assignments .research-setup-assignment { margin-top: 12px; }
+.assignment-heading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+.assignment-active-button { padding: 7px 10px; border: 1px solid var(--ink); border-radius: 8px; background: #fffdf9; color: var(--ink); font-size: .82rem; cursor: pointer; }
+.assignment-active-button[aria-pressed="true"] { background: var(--ink); color: var(--cream); }
+.research-setup-assignment .research-setup-answer { font-size: .9rem; }
 .research-setup-note { margin: 18px 0; font-size: .875rem; }
 .research-setup-start { width: 100%; min-height: 56px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 18px; border: 2px solid var(--ink); border-radius: 12px; background: var(--ink); color: var(--cream); font-weight: 700; cursor: pointer; }
 .research-setup-start:hover { background: #674c3c; }
+.research-setup-start:disabled { opacity: .5; cursor: not-allowed; }
 
 /* Informatiestructuur van de fictieve praktijk */
 .brand-button { border: 0; padding: 0; background: none; cursor: pointer; text-align: left; }
@@ -297,6 +305,9 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .full-label textarea { resize: vertical; }
 .demo-summary, .assignment-large, .connection-box, .live-placeholder, .result-placeholder { margin: 18px 0; padding: 16px; border-radius: 12px; background: #f7f1e9; }
 .demo-summary p, .live-placeholder p, .connection-box p, .result-placeholder p { margin-bottom: 0; color: var(--muted); }
+.demo-task-list { margin-top: 20px; }
+.demo-task-list .demo-summary { margin: 10px 0; }
+.demo-task-list .research-primary { margin-top: 14px; }
 .research-primary, .research-secondary, .task-controls button, .research-card > button, .connection-box button, .print-toolbar button { min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 10px 16px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: #fff; font-weight: 600; text-decoration: none; cursor: pointer; }
 .research-secondary { background: #fff; color: var(--ink); }
 .participant-list button:disabled, button:disabled { opacity: .55; cursor: not-allowed; }

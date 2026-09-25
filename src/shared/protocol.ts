@@ -80,6 +80,7 @@ export const INFO_TASKS: Record<InfoTaskId, InfoTask> = {
 
 export const INFO_TASK_IDS: InfoTaskId[] = ['I1', 'I2', 'I3', 'I4'];
 export const EXTRA_TASK_IDS: InfoTaskId[] = [...INFO_TASK_IDS, 'I5'];
+export const TASK_CHOICES: TaskChoice[] = ['X', 'Y', 'Z', 'W', ...EXTRA_TASK_IDS];
 
 export function getScenario(pair: Pair, content: ContentVersion): Scenario {
   const [service, date, time] = scenarios[pair][content];
@@ -121,7 +122,7 @@ export function assignment(scenario: Scenario): string {
   return `Maak een afspraak voor ${service.toLowerCase()} op ${formatDate(date)} om ${time} uur.`;
 }
 
-export function parseDemoQuery(search: string): { pair: Pair; version: Version; content: ContentVersion; infoTask: InfoTaskId | null; scale: number } {
+export function parseDemoQuery(search: string): { pair: Pair; version: Version; content: ContentVersion; infoTask: InfoTaskId | null; selectedTasks: TaskChoice[]; scale: number } {
   const query = new URLSearchParams(search);
   const pairNumber = Number(query.get('paar'));
   const pair = ([1, 2, 3, 4, 5, 6].includes(pairNumber) ? pairNumber : 1) as Pair;
@@ -129,7 +130,10 @@ export function parseDemoQuery(search: string): { pair: Pair; version: Version; 
   const content = (['X', 'Y', 'Z', 'W'].includes(query.get('inhoud') || '') ? query.get('inhoud') : 'X') as ContentVersion;
   const candidate = query.get('info') as InfoTaskId | null;
   const infoTask = candidate && candidate in INFO_TASKS ? candidate : null;
+  const selectedTasks = query.has('opdrachten')
+    ? [...new Set((query.get('opdrachten') || '').split(',').filter((task): task is TaskChoice => TASK_CHOICES.includes(task as TaskChoice)))]
+    : [infoTask || content];
   const scaleNumber = Number(query.get('vergroting'));
   const scale = [100, 125, 150, 200].includes(scaleNumber) ? scaleNumber : 100;
-  return { pair, version, content, infoTask, scale };
+  return { pair, version, content, infoTask, selectedTasks, scale };
 }

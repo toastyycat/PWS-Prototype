@@ -6,7 +6,7 @@ Voer in deze map `npm ci` en daarna `npm run dev` uit. Open het adres dat Vite t
 
 ## Onderzoek en demo
 
-Op `/` kiest de onderzoeker met schakelknoppen een van de zes tests, variant A of B en boekingsopdracht X, Y, Z of W. Daarnaast zijn er vier informatieopdrachten I1 tot en met I4 en een inlogopdracht I5. Pas na **Start deelnemersscherm** verschijnt de praktijksite. De selectie blijft actief terwijl de deelnemer tussen pagina’s navigeert.
+Op `/` kiest de onderzoeker met schakelknoppen een van de zes tests, variant A of B en een of meer opdrachten tegelijk: boekingen X/Y/Z/W, informatieopdrachten I1-I4 of inloggen I5. Van de aangevinkte opdrachten markeert de onderzoeker welke als eerste start. De andere opdrachten blijven als lijst in de URL bewaard en kunnen na opnieuw laden worden gestart. Pas na **Start deelnemersscherm** verschijnt de praktijksite. In het onderzoekspaneel krijgt elke aangevinkte demo-opdracht een eigen link.
 
 Het onderzoekspaneel staat op `/onderzoek` en toont een voorbeeldrooster van twaalf boekingen, twee informatieopdrachten en een inlogopdracht per deelnemer. Test 6 vergelijkt bij dezelfde wachttijd (1,4 seconde per schermovergang) een leeg laadscherm met een skeletonscherm. De inlogopdracht gebruikt uitsluitend het fictieve adres `alex.voorbeeld@example.invalid`; er is geen echte account of e-mailverzending. Apparaatkoppeling, automatische registratie en export zijn in dit frontendprototype nog niet aangesloten. Gebruik de demo daarom nog niet voor de officiële dataverzameling.
 

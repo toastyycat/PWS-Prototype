@@ -52,20 +52,25 @@ function ResearchHeader({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void 
 function DemoLauncher() {
   const [pair, setPair] = useState<Pair>(1);
   const [version, setVersion] = useState<Version>('A');
-  const [task, setTask] = useState<TaskChoice>('X');
+  const [tasks, setTasks] = useState<TaskChoice[]>(['X']);
   const [scale, setScale] = useState(100);
-  const href = `/demo?paar=${pair}&variant=${version}&${task.startsWith('I') ? `info=${task}` : `inhoud=${task}`}&vergroting=${scale}`;
+  const toggleTask = (task: TaskChoice) => setTasks(previous => previous.includes(task) ? previous.filter(item => item !== task) : [...previous, task]);
+  const href = (task: TaskChoice) => `/demo?paar=${pair}&variant=${version}&${task.startsWith('I') ? `info=${task}` : `inhoud=${task}`}&opdrachten=${tasks.join(',')}&vergroting=${scale}`;
   return <section className="research-card demo-launcher">
     <div className="card-heading"><div><p className="research-kicker">Schermen bekijken</p><h2>Demomodus</h2></div><span className="demo-pill">Geen onderzoeksdata</span></div>
-    <p>Open een opdracht met dezelfde schermen en varianten als de geplande taken.</p>
+    <p>Vink een of meer opdrachten aan. Open daarna de gewenste opdracht afzonderlijk.</p>
     <div className="demo-toggle-groups">
       <fieldset className="toggle-fieldset"><legend>Test</legend><div className="toggle-grid test-toggles">{allPairs.map(value => <button type="button" className="research-toggle" aria-pressed={pair === value} key={value} onClick={() => setPair(value)}>Test {value}<span>{PAIR_NAMES[value]}</span></button>)}</div></fieldset>
       <fieldset className="toggle-fieldset"><legend>Variant</legend><div className="toggle-grid two-toggles">{(['A', 'B'] as Version[]).map(value => <button type="button" className="research-toggle" aria-pressed={version === value} key={value} onClick={() => setVersion(value)}>Variant {value}{pair === 6 && <span>{value === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span>}</button>)}</div></fieldset>
-      <fieldset className="toggle-fieldset"><legend>Opdracht</legend><div className="toggle-grid task-toggles">{(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" className="research-toggle" aria-pressed={task === code} key={code} onClick={() => setTask(code)}>Boeking {code}</button>)}{EXTRA_TASK_IDS.map(code => <button type="button" className="research-toggle" aria-pressed={task === code} key={code} onClick={() => setTask(code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}</div></fieldset>
+      <fieldset className="toggle-fieldset"><legend>Opdrachten (meerdere mogelijk)</legend><div className="toggle-grid task-toggles">{(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" className="research-toggle" aria-pressed={tasks.includes(code)} key={code} onClick={() => toggleTask(code)}>Boeking {code}</button>)}{EXTRA_TASK_IDS.map(code => <button type="button" className="research-toggle" aria-pressed={tasks.includes(code)} key={code} onClick={() => toggleTask(code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}</div></fieldset>
       <fieldset className="toggle-fieldset"><legend>Tekstvergroting</legend><div className="toggle-grid scale-toggles">{[100, 125, 150, 200].map(value => <button type="button" className="research-toggle" aria-pressed={scale === value} key={value} onClick={() => setScale(value)}>{value}%</button>)}</div></fieldset>
     </div>
-    <div className="demo-summary"><strong>Opdrachtkaart</strong><p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(pair, task as ContentVersion))}</p>{task === 'I5' && <p><strong>Geef vooraf dit oefenadres:</strong> {INFO_TASKS.I5.expectedAnswer}</p>}</div>
-    <a className="research-primary" href={href} target="_blank" rel="noreferrer">Open demo <span aria-hidden="true">↗</span></a>
+    <div className="demo-task-list"><h3>Geselecteerde opdrachten ({tasks.length})</h3>{tasks.length ? tasks.map(task => <div className="demo-summary" key={task}>
+      <strong>{task.startsWith('I') ? task === 'I5' ? 'Inloggen' : `Siteopdracht ${task}` : `Boeking ${task}`}</strong>
+      <p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(pair, task as ContentVersion))}</p>
+      {task === 'I5' && <p><strong>Geef vooraf dit oefenadres:</strong> {INFO_TASKS.I5.expectedAnswer}</p>}
+      <a className="research-primary" href={href(task)} target="_blank" rel="noreferrer">Open deze demo <span aria-hidden="true">↗</span></a>
+    </div>) : <p>Kies minstens één opdracht.</p>}</div>
   </section>;
 }
 

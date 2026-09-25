@@ -54,3 +54,11 @@ test('researcher links retain every booking and information task', () => {
   }
   assert.equal(parseDemoQuery('?info=unknown').infoTask, null);
 });
+
+test('researcher links preserve several selected assignments', () => {
+  const parsed = parseDemoQuery('?paar=6&variant=B&inhoud=Y&opdrachten=X,I2,Y,I5,X,unknown');
+  assert.deepEqual(parsed.selectedTasks, ['X', 'I2', 'Y', 'I5']);
+  assert.equal(parsed.content, 'Y');
+  assert.deepEqual(parseDemoQuery('?opdrachten=').selectedTasks, []);
+  assert.deepEqual(parseDemoQuery('?info=I5').selectedTasks, ['I5']);
+});

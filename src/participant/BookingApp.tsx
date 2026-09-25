@@ -2,7 +2,7 @@ import { useEffect, useReducer, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { gsap } from 'gsap';
 import type { InfoTaskId, Pair, Scenario, Service, TaskChoice, Time, VariantConfig, Version } from '../shared/protocol';
-import { assignment, BOOKING_MONTHS, EXTRA_TASK_IDS, FAKE_LOGIN_EMAIL, formatDate, formatMonth, INFO_TASKS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
+import { assignment, BOOKING_MONTHS, EXTRA_TASK_IDS, FAKE_LOGIN_EMAIL, formatDate, formatMonth, getScenario, INFO_TASKS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
 import { mainNavigation, pageById, sitePages } from './siteContent';
 
 type Screen = 'setup' | 'home' | 'info' | 'profile' | 'search' | 'login' | 'account' | 'service' | 'date' | 'time' | 'review' | 'confirmation';
@@ -220,7 +220,11 @@ function searchPages(query: string) {
   });
 }
 
-export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange }: { scenario: Scenario; infoTask: InfoTaskId | null; variant: VariantConfig; scale: number; onVariantChange: (pair: Pair, version: Version, task: TaskChoice) => void }) {
+export function BookingApp({ scenario, selectedTasks, activeTask, variant, scale, onVariantChange, onTaskToggle, onActiveTaskChange }: {
+  scenario: Scenario; selectedTasks: TaskChoice[]; activeTask: TaskChoice | null;
+  variant: VariantConfig; scale: number; onVariantChange: (pair: Pair, version: Version) => void;
+  onTaskToggle: (task: TaskChoice) => void; onActiveTaskChange: (task: TaskChoice) => void;
+}) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [loading, setLoading] = useState(false);
   const loadingRef = useRef(false);
@@ -321,27 +325,33 @@ export function BookingApp({ scenario, infoTask, variant, scale, onVariantChange
       <div className="research-setup-card">
         <p className="research-setup-kicker">PWS · onderzoeksvoorbereiding</p>
         <h1>Stel de oefenopdracht in</h1>
-        <p>Kies de test, variant en opdracht voordat het deelnemersscherm verschijnt.</p>
+        <p>Kies de test en variant. U kunt meerdere opdrachten tegelijk aanvinken.</p>
         <div className="research-setup-fields">
           <fieldset className="toggle-fieldset"><legend>Onderzoekstest</legend><div className="toggle-grid test-toggles">
             {([1, 2, 3, 4, 5, 6] as Pair[]).map(pair => <button type="button" key={pair} className="research-toggle" aria-pressed={variant.pair === pair}
-              onClick={() => onVariantChange(pair, variant.version, infoTask || scenario.content)}><strong>Test {pair}</strong><span>{PAIR_NAMES[pair]}</span></button>)}
+              onClick={() => onVariantChange(pair, variant.version)}><strong>Test {pair}</strong><span>{PAIR_NAMES[pair]}</span></button>)}
           </div></fieldset>
           <fieldset className="toggle-fieldset"><legend>Variant</legend><div className="toggle-grid two-toggles">
             {(['A', 'B'] as Version[]).map(version => <button type="button" key={version} className="research-toggle" aria-pressed={variant.version === version}
-              onClick={() => onVariantChange(variant.pair, version, infoTask || scenario.content)}>Variant {version}{variant.pair === 6 ? <span>{version === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span> : null}</button>)}
+              onClick={() => onVariantChange(variant.pair, version)}>Variant {version}{variant.pair === 6 ? <span>{version === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span> : null}</button>)}
           </div></fieldset>
-          <fieldset className="toggle-fieldset"><legend>Opdracht</legend><div className="toggle-grid task-toggles">
-            {(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" key={code} className="research-toggle" aria-pressed={!infoTask && scenario.content === code}
-              onClick={() => onVariantChange(variant.pair, variant.version, code)}>Boeking {code}</button>)}
-            {EXTRA_TASK_IDS.map(code => <button type="button" key={code} className="research-toggle" aria-pressed={infoTask === code}
-              onClick={() => onVariantChange(variant.pair, variant.version, code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}
+          <fieldset className="toggle-fieldset"><legend>Opdrachten (meerdere mogelijk)</legend><div className="toggle-grid task-toggles">
+            {(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" key={code} className="research-toggle" aria-pressed={selectedTasks.includes(code)}
+              onClick={() => onTaskToggle(code)}>Boeking {code}</button>)}
+            {EXTRA_TASK_IDS.map(code => <button type="button" key={code} className="research-toggle" aria-pressed={selectedTasks.includes(code)}
+              onClick={() => onTaskToggle(code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}
           </div></fieldset>
         </div>
-        <div className="research-setup-assignment"><strong>Lees aan de deelnemer voor</strong><p>{infoTask ? INFO_TASKS[infoTask].prompt : assignment(scenario)}</p></div>
-        {infoTask && <p className="research-setup-answer"><strong>Voor de onderzoeker:</strong> {INFO_TASKS[infoTask].expectedAnswer}</p>}
-        <p className="research-setup-note">{infoTask ? 'Deze extra opdracht staat los van de A/B-boekingstests.' : 'De gekozen variant blijft actief tijdens deze oefenboeking.'} De deelnemer ziet de opdracht en onderzoeksinstellingen niet op de praktijksite.</p>
-        <button type="button" className="research-setup-start" onClick={() => {
+        <div className="research-setup-assignments"><h2>Geselecteerde opdrachten ({selectedTasks.length})</h2>
+          {selectedTasks.length ? selectedTasks.map(task => <div className="research-setup-assignment" key={task}>
+            <div className="assignment-heading"><strong>{task.startsWith('I') ? task === 'I5' ? 'Inloggen' : `Siteopdracht ${task}` : `Boeking ${task}`}</strong>
+              <button type="button" className="assignment-active-button" aria-pressed={activeTask === task} onClick={() => onActiveTaskChange(task)}>{activeTask === task ? 'Start met deze opdracht' : 'Als eerste kiezen'}</button></div>
+            <p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(variant.pair, task as Scenario['content']))}</p>
+            {task.startsWith('I') && <p className="research-setup-answer"><strong>Voor de onderzoeker:</strong> {INFO_TASKS[task as InfoTaskId].expectedAnswer}</p>}
+          </div>) : <p>Kies minstens één opdracht om het deelnemersscherm te starten.</p>}
+        </div>
+        <p className="research-setup-note">De knop hieronder start de gemarkeerde opdracht. De andere aangevinkte opdrachten blijven in de adresbalk bewaard; laad de pagina opnieuw om er een te starten. De deelnemer ziet de opdracht en onderzoeksinstellingen niet op de praktijksite.</p>
+        <button type="button" className="research-setup-start" disabled={!activeTask} onClick={() => {
           if (window.location.pathname !== '/') window.history.replaceState(null, '', `/${window.location.search}`);
           navigate({ type: 'START_PARTICIPANT' });
         }}>Start deelnemersscherm <span aria-hidden="true">→</span></button>
