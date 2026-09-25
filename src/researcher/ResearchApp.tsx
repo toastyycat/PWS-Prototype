@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { ContentVersion, InfoTaskId, Pair, TaskChoice, Version } from '../shared/protocol';
-import { assignment, EXTRA_TASK_IDS, getScenario, INFO_TASKS, INFO_TASK_IDS, PAIR_NAMES } from '../shared/protocol';
+import { assignment, DESIGN_PAIRS, EXTRA_TASK_IDS, getScenario, INFO_TASKS, INFO_TASK_IDS, PAIR_NAMES } from '../shared/protocol';
 
 type Tab = 'overzicht' | 'voorbereiding' | 'live' | 'beoordeling';
 type Device = 'Smartphone' | 'Desktop';
@@ -32,8 +32,6 @@ function makeRoster(): Participant[] {
 }
 
 const roster = makeRoster();
-const allPairs = [1, 2, 3, 4, 5, 6] as const;
-
 function ResearchHeader({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void }) {
   const tabs: { key: Tab; label: string }[] = [
     { key: 'overzicht', label: 'Overzicht' },
@@ -50,24 +48,24 @@ function ResearchHeader({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void 
 }
 
 function DemoLauncher() {
-  const [pair, setPair] = useState<Pair>(1);
-  const [version, setVersion] = useState<Version>('A');
+  const [selectedDesigns, setSelectedDesigns] = useState<Pair[]>([]);
   const [tasks, setTasks] = useState<TaskChoice[]>(['X']);
   const [scale, setScale] = useState(100);
   const toggleTask = (task: TaskChoice) => setTasks(previous => previous.includes(task) ? previous.filter(item => item !== task) : [...previous, task]);
-  const href = (task: TaskChoice) => `/demo?paar=${pair}&variant=${version}&${task.startsWith('I') ? `info=${task}` : `inhoud=${task}`}&opdrachten=${tasks.join(',')}&vergroting=${scale}`;
+  const allSelected = DESIGN_PAIRS.every(pair => selectedDesigns.includes(pair));
+  const toggleDesign = (value: Pair) => setSelectedDesigns(previous => previous.includes(value) ? previous.filter(item => item !== value) : [...previous, value]);
+  const href = (task: TaskChoice) => `/demo?designs=${selectedDesigns.join(',')}&${task.startsWith('I') ? `info=${task}` : `inhoud=${task}`}&opdrachten=${tasks.join(',')}&vergroting=${scale}`;
   return <section className="research-card demo-launcher">
     <div className="card-heading"><div><p className="research-kicker">Schermen bekijken</p><h2>Demomodus</h2></div><span className="demo-pill">Geen onderzoeksdata</span></div>
     <p>Vink een of meer opdrachten aan. Open daarna de gewenste opdracht afzonderlijk.</p>
     <div className="demo-toggle-groups">
-      <fieldset className="toggle-fieldset"><legend>Test</legend><div className="toggle-grid test-toggles">{allPairs.map(value => <button type="button" className="research-toggle" aria-pressed={pair === value} key={value} onClick={() => setPair(value)}>Test {value}<span>{PAIR_NAMES[value]}</span></button>)}</div></fieldset>
-      <fieldset className="toggle-fieldset"><legend>Variant</legend><div className="toggle-grid two-toggles">{(['A', 'B'] as Version[]).map(value => <button type="button" className="research-toggle" aria-pressed={version === value} key={value} onClick={() => setVersion(value)}>Variant {value}{pair === 6 && <span>{value === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span>}</button>)}</div></fieldset>
-      <fieldset className="toggle-fieldset"><legend>Opdrachten (meerdere mogelijk)</legend><div className="toggle-grid task-toggles">{(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" className="research-toggle" aria-pressed={tasks.includes(code)} key={code} onClick={() => toggleTask(code)}>Boeking {code}</button>)}{EXTRA_TASK_IDS.map(code => <button type="button" className="research-toggle" aria-pressed={tasks.includes(code)} key={code} onClick={() => toggleTask(code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}</div></fieldset>
+      <fieldset className="toggle-fieldset test-selector"><legend>Testformat</legend><button type="button" role="switch" className="research-toggle switch-toggle all-toggle" aria-checked={allSelected} onClick={() => setSelectedDesigns(allSelected ? [] : [...DESIGN_PAIRS])}><span>Alles</span><i aria-hidden="true" /></button><div className="toggle-grid test-toggles">{DESIGN_PAIRS.map(value => <button type="button" role="switch" className="research-toggle switch-toggle test-card-toggle" aria-checked={selectedDesigns.includes(value)} key={value} onClick={() => toggleDesign(value)}><span><strong>{PAIR_NAMES[value]}</strong><small>Test {value}</small></span><i aria-hidden="true" /></button>)}</div></fieldset>
+      <fieldset className="toggle-fieldset"><legend>Opdrachten (meerdere mogelijk)</legend><div className="toggle-grid task-toggles">{(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" role="switch" className="research-toggle switch-toggle" aria-checked={tasks.includes(code)} key={code} onClick={() => toggleTask(code)}><span>Boeking {code}</span><i aria-hidden="true" /></button>)}{EXTRA_TASK_IDS.map(code => <button type="button" role="switch" className="research-toggle switch-toggle" aria-checked={tasks.includes(code)} key={code} onClick={() => toggleTask(code)}><span>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</span><i aria-hidden="true" /></button>)}</div></fieldset>
       <fieldset className="toggle-fieldset"><legend>Tekstvergroting</legend><div className="toggle-grid scale-toggles">{[100, 125, 150, 200].map(value => <button type="button" className="research-toggle" aria-pressed={scale === value} key={value} onClick={() => setScale(value)}>{value}%</button>)}</div></fieldset>
     </div>
     <div className="demo-task-list"><h3>Geselecteerde opdrachten ({tasks.length})</h3>{tasks.length ? tasks.map(task => <div className="demo-summary" key={task}>
       <strong>{task.startsWith('I') ? task === 'I5' ? 'Inloggen' : `Siteopdracht ${task}` : `Boeking ${task}`}</strong>
-      <p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(pair, task as ContentVersion))}</p>
+      <p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(1, task as ContentVersion))}</p>
       {task === 'I5' && <p><strong>Geef vooraf dit oefenadres:</strong> {INFO_TASKS.I5.expectedAnswer}</p>}
       <a className="research-primary" href={href(task)} target="_blank" rel="noreferrer">Open deze demo <span aria-hidden="true">↗</span></a>
     </div>) : <p>Kies minstens één opdracht.</p>}</div>

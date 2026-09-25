@@ -81,6 +81,7 @@ export const INFO_TASKS: Record<InfoTaskId, InfoTask> = {
 export const INFO_TASK_IDS: InfoTaskId[] = ['I1', 'I2', 'I3', 'I4'];
 export const EXTRA_TASK_IDS: InfoTaskId[] = [...INFO_TASK_IDS, 'I5'];
 export const TASK_CHOICES: TaskChoice[] = ['X', 'Y', 'Z', 'W', ...EXTRA_TASK_IDS];
+export const DESIGN_PAIRS: Pair[] = [1, 2, 3, 4, 6];
 
 export function getScenario(pair: Pair, content: ContentVersion): Scenario {
   const [service, date, time] = scenarios[pair][content];
@@ -108,6 +109,21 @@ export function getVariant(pair: Pair, version: Version): VariantConfig {
   };
 }
 
+export function getCombinedVariant(selectedDesigns: Pair[]): VariantConfig {
+  const selected = new Set(selectedDesigns);
+  const all = DESIGN_PAIRS.every(pair => selected.has(pair));
+  return {
+    pair: all ? 5 : selectedDesigns[0] || 1,
+    version: selected.size ? 'B' : 'A',
+    largeText: selected.has(1),
+    visibleNavigation: selected.has(2),
+    highContrast: selected.has(3),
+    animatedConfirmation: selected.has(4),
+    emphasizedAction: all,
+    skeletonLoading: selected.has(6),
+  };
+}
+
 export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat('nl-NL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${iso}T12:00:00Z`));
 }
@@ -122,11 +138,14 @@ export function assignment(scenario: Scenario): string {
   return `Maak een afspraak voor ${service.toLowerCase()} op ${formatDate(date)} om ${time} uur.`;
 }
 
-export function parseDemoQuery(search: string): { pair: Pair; version: Version; content: ContentVersion; infoTask: InfoTaskId | null; selectedTasks: TaskChoice[]; scale: number } {
+export function parseDemoQuery(search: string): { pair: Pair; version: Version; selectedDesigns: Pair[]; content: ContentVersion; infoTask: InfoTaskId | null; selectedTasks: TaskChoice[]; scale: number } {
   const query = new URLSearchParams(search);
   const pairNumber = Number(query.get('paar'));
   const pair = ([1, 2, 3, 4, 5, 6].includes(pairNumber) ? pairNumber : 1) as Pair;
   const version = query.get('variant') === 'B' ? 'B' : 'A';
+  const selectedDesigns = query.has('designs')
+    ? [...new Set((query.get('designs') || '').split(',').map(Number).filter((value): value is Pair => DESIGN_PAIRS.includes(value as Pair)))]
+    : version === 'B' ? (pair === 5 ? [...DESIGN_PAIRS] : DESIGN_PAIRS.includes(pair) ? [pair] : []) : [];
   const content = (['X', 'Y', 'Z', 'W'].includes(query.get('inhoud') || '') ? query.get('inhoud') : 'X') as ContentVersion;
   const candidate = query.get('info') as InfoTaskId | null;
   const infoTask = candidate && candidate in INFO_TASKS ? candidate : null;
@@ -135,5 +154,5 @@ export function parseDemoQuery(search: string): { pair: Pair; version: Version; 
     : [infoTask || content];
   const scaleNumber = Number(query.get('vergroting'));
   const scale = [100, 125, 150, 200].includes(scaleNumber) ? scaleNumber : 100;
-  return { pair, version, content, infoTask, selectedTasks, scale };
+  return { pair, version, selectedDesigns, content, infoTask, selectedTasks, scale };
 }

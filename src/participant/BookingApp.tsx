@@ -1,8 +1,8 @@
 import { useEffect, useReducer, useRef, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import { gsap } from 'gsap';
-import type { InfoTaskId, Pair, Scenario, Service, TaskChoice, Time, VariantConfig, Version } from '../shared/protocol';
-import { assignment, BOOKING_MONTHS, EXTRA_TASK_IDS, FAKE_LOGIN_EMAIL, formatDate, formatMonth, getScenario, INFO_TASKS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
+import type { InfoTaskId, Pair, Scenario, Service, TaskChoice, Time, VariantConfig } from '../shared/protocol';
+import { assignment, BOOKING_MONTHS, DESIGN_PAIRS, EXTRA_TASK_IDS, FAKE_LOGIN_EMAIL, formatDate, formatMonth, getScenario, INFO_TASKS, isBookableDate, PAIR_NAMES, SERVICES, TIMES } from '../shared/protocol';
 import { mainNavigation, pageById, sitePages } from './siteContent';
 
 type Screen = 'setup' | 'home' | 'info' | 'profile' | 'search' | 'login' | 'account' | 'service' | 'date' | 'time' | 'review' | 'confirmation';
@@ -200,13 +200,18 @@ function DesktopNavGroup({ group, openPage }: { group: (typeof mainNavigation)[n
   </div>;
 }
 
-function LoadingScreen({ skeleton }: { skeleton: boolean }) {
+function LoadingScreen({ skeleton, target }: { skeleton: boolean; target: Screen }) {
+  const booking = ['service', 'date', 'time', 'review', 'profile'].includes(target);
   return <div className={`loading-screen ${skeleton ? 'loading-skeleton' : 'loading-blank'}`} role="status" aria-live="polite">
     <span className="visually-hidden">Pagina wordt geladen</span>
     {skeleton && <div className="skeleton-layout" aria-hidden="true">
-      <div className="skeleton-top" /><div className="skeleton-nav" />
-      <div className="skeleton-hero"><div><i /><i /><i /></div><span /></div>
-      <div className="skeleton-content"><i /><i /><div><span /><span /><span /></div></div>
+      {target !== 'confirmation' && <header className="skeleton-header"><div><i className="skeleton-brand" /><i className="skeleton-search" /><i className="skeleton-header-action" /></div><i className="skeleton-nav" /></header>}
+      {target === 'confirmation' ? <main className="skeleton-confirmation"><div className="skeleton-confirmation-card"><i className="skeleton-circle" /><i className="skeleton-heading" /><i className="skeleton-line" /><div className="skeleton-review-rows">{[1, 2, 3].map(item => <i key={item} />)}</div><i className="skeleton-button" /></div></main>
+        : target === 'home' || target === 'setup' ? <main><div className="skeleton-home-hero"><div className="skeleton-home-panel"><i className="skeleton-line short" /><i className="skeleton-heading" /><i className="skeleton-line" /><i className="skeleton-line" /><div className="skeleton-home-actions">{[1, 2, 3].map(item => <i key={item} />)}</div></div></div><div className="skeleton-site-cards"><i className="skeleton-heading" /><div>{[1, 2, 3].map(item => <i key={item} />)}</div></div></main>
+        : booking ? <main><div className="skeleton-booking-hero"><div><i className="skeleton-line short" /><i className="skeleton-heading" /><i className="skeleton-line" /></div><i className="skeleton-hero-image" /></div><div className="skeleton-booking-layout"><div className="skeleton-content-panel"><i className="skeleton-line short" /><i className="skeleton-heading" /><i className="skeleton-line" />{target === 'date' ? <div className="skeleton-calendar"><i className="skeleton-line" /><div>{Array.from({ length: 35 }, (_, index) => <i key={index} />)}</div></div> : target === 'review' ? <div className="skeleton-review-rows">{[1, 2, 3].map(item => <i key={item} />)}</div> : <div className="skeleton-choice-grid">{Array.from({ length: target === 'service' ? 6 : target === 'time' ? 4 : 2 }, (_, index) => <i key={index} />)}</div>}<i className="skeleton-button" /></div><aside className="skeleton-aside"><i className="skeleton-aside-image" /><i className="skeleton-heading" /><i className="skeleton-line" /><i className="skeleton-line" /></aside></div></main>
+        : target === 'login' || target === 'account' ? <main className="skeleton-login"><div><i className="skeleton-line short" /><i className="skeleton-heading" /><i className="skeleton-line" /><i className="skeleton-input" /><i className="skeleton-button" /></div></main>
+        : target === 'search' ? <main className="skeleton-search-page"><i className="skeleton-line short" /><i className="skeleton-heading" /><i className="skeleton-line" /><div className="skeleton-review-rows">{[1, 2, 3].map(item => <i key={item} />)}</div></main>
+        : <main><div className="skeleton-info-hero"><div><i className="skeleton-line short" /><i className="skeleton-heading" /><i className="skeleton-line" /><i className="skeleton-button" /></div><i className="skeleton-hero-image" /></div><div className="skeleton-info-body"><div><i className="skeleton-heading" /><i className="skeleton-line" /><i className="skeleton-line" /><i className="skeleton-heading" /><i className="skeleton-line" /></div><aside><i className="skeleton-heading" /><i className="skeleton-line" /><i className="skeleton-line" /></aside></div></main>}
     </div>}
   </div>;
 }
@@ -220,13 +225,14 @@ function searchPages(query: string) {
   });
 }
 
-export function BookingApp({ scenario, selectedTasks, activeTask, variant, scale, onVariantChange, onTaskToggle, onActiveTaskChange }: {
+export function BookingApp({ scenario, selectedTasks, activeTask, variant, selectedDesigns, scale, onDesignToggle, onAllDesignsToggle, onTaskToggle, onActiveTaskChange }: {
   scenario: Scenario; selectedTasks: TaskChoice[]; activeTask: TaskChoice | null;
-  variant: VariantConfig; scale: number; onVariantChange: (pair: Pair, version: Version) => void;
+  variant: VariantConfig; selectedDesigns: Pair[]; scale: number; onDesignToggle: (pair: Pair) => void; onAllDesignsToggle: () => void;
   onTaskToggle: (task: TaskChoice) => void; onActiveTaskChange: (task: TaskChoice) => void;
 }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [loading, setLoading] = useState(false);
+  const [loadingTarget, setLoadingTarget] = useState<Screen>('home');
   const loadingRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [searchTerm, setSearchTerm] = useState(() => new URLSearchParams(window.location.search).get('q') || '');
@@ -276,9 +282,11 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, scale
     return () => context.revert();
   }, [canAnimate, loading, state.screen, state.pageId]);
   const navigate = (action: Action) => {
-    if (variant.pair !== 6) { dispatch(action); return; }
     if (loadingRef.current) return;
+    const nextState = reducer(state, action);
+    if (nextState.screen === state.screen && nextState.pageId === state.pageId) { dispatch(action); return; }
     loadingRef.current = true;
+    setLoadingTarget(nextState.screen);
     setLoading(true);
     timerRef.current = setTimeout(() => { dispatch(action); loadingRef.current = false; setLoading(false); timerRef.current = null; }, 1400);
   };
@@ -325,28 +333,24 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, scale
       <div className="research-setup-card">
         <p className="research-setup-kicker">PWS · onderzoeksvoorbereiding</p>
         <h1>Stel de oefenopdracht in</h1>
-        <p>Kies de test en variant. U kunt meerdere opdrachten tegelijk aanvinken.</p>
+        <p>Zet één of meer ontwerpkenmerken aan. U kunt ook meerdere opdrachten tegelijk kiezen.</p>
         <div className="research-setup-fields">
-          <fieldset className="toggle-fieldset"><legend>Onderzoekstest</legend><div className="toggle-grid test-toggles">
-            {([1, 2, 3, 4, 5, 6] as Pair[]).map(pair => <button type="button" key={pair} className="research-toggle" aria-pressed={variant.pair === pair}
-              onClick={() => onVariantChange(pair, variant.version)}><strong>Test {pair}</strong><span>{PAIR_NAMES[pair]}</span></button>)}
-          </div></fieldset>
-          <fieldset className="toggle-fieldset"><legend>Variant</legend><div className="toggle-grid two-toggles">
-            {(['A', 'B'] as Version[]).map(version => <button type="button" key={version} className="research-toggle" aria-pressed={variant.version === version}
-              onClick={() => onVariantChange(variant.pair, version)}>Variant {version}{variant.pair === 6 ? <span>{version === 'A' ? 'Zonder laadbeeld' : 'Skeletscherm'}</span> : null}</button>)}
+          <fieldset className="toggle-fieldset test-selector"><legend>Testformat</legend><button type="button" role="switch" className="research-toggle switch-toggle all-toggle" aria-checked={DESIGN_PAIRS.every(pair => selectedDesigns.includes(pair))} onClick={onAllDesignsToggle}><span>Alles</span><i aria-hidden="true" /></button><div className="toggle-grid test-toggles">
+            {DESIGN_PAIRS.map(pair => <button type="button" role="switch" key={pair} className="research-toggle switch-toggle test-card-toggle" aria-checked={selectedDesigns.includes(pair)}
+              onClick={() => onDesignToggle(pair)}><span><strong>{PAIR_NAMES[pair]}</strong><small>Test {pair}</small></span><i aria-hidden="true" /></button>)}
           </div></fieldset>
           <fieldset className="toggle-fieldset"><legend>Opdrachten (meerdere mogelijk)</legend><div className="toggle-grid task-toggles">
-            {(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" key={code} className="research-toggle" aria-pressed={selectedTasks.includes(code)}
-              onClick={() => onTaskToggle(code)}>Boeking {code}</button>)}
-            {EXTRA_TASK_IDS.map(code => <button type="button" key={code} className="research-toggle" aria-pressed={selectedTasks.includes(code)}
-              onClick={() => onTaskToggle(code)}>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</button>)}
+            {(['X', 'Y', 'Z', 'W'] as const).map(code => <button type="button" role="switch" key={code} className="research-toggle switch-toggle" aria-checked={selectedTasks.includes(code)}
+              onClick={() => onTaskToggle(code)}><span>Boeking {code}</span><i aria-hidden="true" /></button>)}
+            {EXTRA_TASK_IDS.map(code => <button type="button" role="switch" key={code} className="research-toggle switch-toggle" aria-checked={selectedTasks.includes(code)}
+              onClick={() => onTaskToggle(code)}><span>{code === 'I5' ? 'Inloggen' : `Siteopdracht ${code}`}</span><i aria-hidden="true" /></button>)}
           </div></fieldset>
         </div>
         <div className="research-setup-assignments"><h2>Geselecteerde opdrachten ({selectedTasks.length})</h2>
           {selectedTasks.length ? selectedTasks.map(task => <div className="research-setup-assignment" key={task}>
             <div className="assignment-heading"><strong>{task.startsWith('I') ? task === 'I5' ? 'Inloggen' : `Siteopdracht ${task}` : `Boeking ${task}`}</strong>
               <button type="button" className="assignment-active-button" aria-pressed={activeTask === task} onClick={() => onActiveTaskChange(task)}>{activeTask === task ? 'Start met deze opdracht' : 'Als eerste kiezen'}</button></div>
-            <p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(variant.pair, task as Scenario['content']))}</p>
+            <p>{task.startsWith('I') ? INFO_TASKS[task as InfoTaskId].prompt : assignment(getScenario(scenario.pair, task as Scenario['content']))}</p>
             {task.startsWith('I') && <p className="research-setup-answer"><strong>Voor de onderzoeker:</strong> {INFO_TASKS[task as InfoTaskId].expectedAnswer}</p>}
           </div>) : <p>Kies minstens één opdracht om het deelnemersscherm te starten.</p>}
         </div>
@@ -357,7 +361,7 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, scale
         }}>Start deelnemersscherm <span aria-hidden="true">→</span></button>
       </div>
     </main>
-    {loading && <LoadingScreen skeleton={variant.skeletonLoading} />}
+    {loading && <LoadingScreen skeleton={variant.skeletonLoading} target={loadingTarget} />}
   </>);
 
   return (
@@ -578,7 +582,7 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, scale
         <div><strong>Praktisch</strong>{['tarieven', 'locaties', 'contact', 'veelgestelde-vragen'].map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}</button>)}</div>
         <div><strong>Meer</strong>{['over-ons', 'werken-bij', 'nieuws', 'privacy', 'voorwaarden'].map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}</button>)}</div>
       </div></footer>}
-      {loading && <LoadingScreen skeleton={variant.skeletonLoading} />}
+      {loading && <LoadingScreen skeleton={variant.skeletonLoading} target={loadingTarget} />}
     </div>
   );
 }
