@@ -261,7 +261,7 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
     variant.largeText ? 'has-large-text' : '',
     isLargeFull ? 'has-large-headings' : '',
     variant.highContrast ? 'has-high-contrast' : '',
-    !variant.highContrast && (variant.pair === 3 || variant.pair === 5) ? 'has-low-contrast' : '',
+    !variant.highContrast ? 'has-low-contrast' : '',
     variant.emphasizedAction ? 'has-emphasized-action' : '',
   ].filter(Boolean).join(' ');
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;

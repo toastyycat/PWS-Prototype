@@ -430,14 +430,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .skeleton-login > div { justify-items: start; }
 .skeleton-info-body > div, .skeleton-info-body > aside { min-height: 280px; }
 @keyframes skeleton-shimmer { to { background-position-x: -200%; } }
-.has-low-contrast { --muted: #a69d93; }
-.has-low-contrast .booking-main .content-panel h1,
-.has-low-contrast .booking-main .content-panel strong,
-.has-low-contrast .booking-main .content-panel button,
-.has-low-contrast .booking-main .content-panel .instruction,
-.has-low-contrast .booking-main .content-panel .step-indicator,
-.has-low-contrast .booking-main .content-panel .calendar-hint,
-.has-low-contrast .booking-main .content-panel .weekday { color: #a69d93; }
+.has-low-contrast {
+  --ink: #817971;
+  --muted: #817971;
+  --accent: #c4b9ad;
+  --line: #d9cfc4;
+  color: #817971;
+}
+.has-low-contrast *:not(img) { color: #817971 !important; }
+.has-low-contrast input::placeholder { color: #817971; opacity: 1; }
+.has-low-contrast :is(button, a, input, select, textarea):focus-visible { outline-color: #c4b9ad; }
+.has-low-contrast :is(.site-primary, .nav-appointment, .site-search button, .confirmation-symbol, .confirm-button) {
+  background: #d8cec3 !important;
+  border-color: #c4b9ad !important;
+}
+.has-low-contrast :is(.site-primary, .nav-appointment, .site-search button, .confirm-button):hover { background: #d3c8bc !important; }
+.has-low-contrast :is(input, select, textarea, .radio-mark, .calendar-month-button) { border-color: #c4b9ad; }
+.has-low-contrast .validation { color: #817971; }
 
 @media (max-width: 1023px) {
   .site-header-inner { width: calc(100% - 32px); min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "brand environment" "search search"; padding: 12px 0; gap: 10px 16px; }
