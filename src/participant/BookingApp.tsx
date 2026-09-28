@@ -225,12 +225,14 @@ function searchPages(query: string) {
   });
 }
 
-export function BookingApp({ scenario, selectedTasks, activeTask, variant, selectedDesigns, scale, onDesignToggle, onAllDesignsToggle, onTaskToggle, onActiveTaskChange }: {
+export function BookingApp({ scenario, selectedTasks, activeTask, variant, selectedDesigns, scale, onDesignToggle, onAllDesignsToggle, onTaskToggle, onActiveTaskChange, automatic, onStarted, onCompleted }: {
   scenario: Scenario; selectedTasks: TaskChoice[]; activeTask: TaskChoice | null;
   variant: VariantConfig; selectedDesigns: Pair[]; scale: number; onDesignToggle: (pair: Pair) => void; onAllDesignsToggle: () => void;
   onTaskToggle: (task: TaskChoice) => void; onActiveTaskChange: (task: TaskChoice) => void;
+  automatic?: boolean; onStarted?: () => void; onCompleted?: () => void;
 }) {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [state, dispatch] = useReducer(reducer, automatic ? { ...initialState, screen: 'home' } : initialState);
+  const completedRef = useRef(false);
   const [loading, setLoading] = useState(false);
   const [loadingTarget, setLoadingTarget] = useState<Screen>('home');
   const loadingRef = useRef(false);
@@ -240,6 +242,14 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
   const [loginEmail, setLoginEmail] = useState('');
   const [loginError, setLoginError] = useState('');
   const bookingRef = useRef<HTMLElement | null>(null);
+  useEffect(() => { if (automatic) onStarted?.(); }, []);
+  useEffect(() => {
+    if (!automatic || completedRef.current) return;
+    const bookingDone = state.screen === 'confirmation' && activeTask && !activeTask.startsWith('I')
+      && state.service === scenario.target.service && state.date === scenario.target.date && state.time === scenario.target.time;
+    const loginDone = activeTask === 'I5' && state.screen === 'account';
+    if (bookingDone || loginDone) { completedRef.current = true; onCompleted?.(); }
+  }, [automatic, activeTask, onCompleted, scenario, state.screen, state.service, state.date, state.time]);
   useEffect(() => {
     const handlePopState = () => {
       if (timerRef.current) clearTimeout(timerRef.current);
@@ -294,19 +304,19 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
   const isSitePage = ['home', 'info', 'profile', 'search', 'login', 'account'].includes(state.screen);
   const isBooking = !isSitePage;
   const openPage = (pageId: string) => {
-    if (window.location.pathname !== `/informatie/${pageId}`) window.history.pushState(null, '', `/informatie/${pageId}${window.location.search}`);
+    if (!automatic && window.location.pathname !== `/informatie/${pageId}`) window.history.pushState(null, '', `/informatie/${pageId}${window.location.search}`);
     navigate({ type: 'OPEN_PAGE', pageId });
   };
   const openHome = () => {
-    if (window.location.pathname !== '/') window.history.pushState(null, '', `/${window.location.search}`);
+    if (!automatic && window.location.pathname !== '/') window.history.pushState(null, '', `/${window.location.search}`);
     navigate({ type: 'OPEN_HOME' });
   };
   const startBooking = () => {
-    if (window.location.pathname !== '/') window.history.pushState(null, '', `/${window.location.search}`);
+    if (!automatic && window.location.pathname !== '/') window.history.pushState(null, '', `/${window.location.search}`);
     navigate({ type: 'OPEN_BOOKING' });
   };
   const openLogin = () => {
-    if (window.location.pathname !== '/inloggen') window.history.pushState(null, '', `/inloggen${window.location.search}`);
+    if (!automatic && window.location.pathname !== '/inloggen') window.history.pushState(null, '', `/inloggen${window.location.search}`);
     setLoginError('');
     navigate({ type: 'OPEN_LOGIN' });
   };
@@ -317,7 +327,7 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
     const url = new URL(window.location.href);
     url.pathname = '/zoeken';
     if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
-    window.history.pushState(null, '', url);
+    if (!automatic) window.history.pushState(null, '', url);
     navigate({ type: 'OPEN_SEARCH' });
   };
   const submitLogin = (event: FormEvent<HTMLFormElement>) => {
@@ -515,6 +525,8 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
           <div className="site-page-layout">
             <div className="site-page-copy">{page.sections.map(section => <section key={section.title}><h2>{section.title}</h2><p>{section.text}</p></section>)}</div>
             <aside className="site-page-aside"><h2>Verder kijken</h2><p>Bekijk verwante onderwerpen of keer terug naar het overzicht.</p>
+              {automatic && activeTask?.startsWith('I') && activeTask !== 'I5' && INFO_TASKS[activeTask as InfoTaskId].targetPageId === page.id &&
+                <button type="button" className="site-primary" onClick={() => { if (!completedRef.current) { completedRef.current = true; onCompleted?.(); } }}>Ik heb het antwoord gevonden</button>}
               {(page.links || []).map(id => <button type="button" key={id} onClick={() => openPage(id)}>{pageById[id].title}<span aria-hidden="true">→</span></button>)}
               <button type="button" onClick={openHome}>Terug naar home<span aria-hidden="true">→</span></button>
             </aside>

@@ -1,36 +1,9 @@
 import { useMemo, useState } from 'react';
-import type { ContentVersion, InfoTaskId, Pair, TaskChoice, Version } from '../shared/protocol';
-import { assignment, DESIGN_PAIRS, EXTRA_TASK_IDS, getScenario, INFO_TASKS, INFO_TASK_IDS, PAIR_NAMES } from '../shared/protocol';
+import type { ContentVersion, InfoTaskId, Pair, TaskChoice } from '../shared/protocol';
+import { assignment, DESIGN_PAIRS, EXTRA_TASK_IDS, getScenario, INFO_TASKS, PAIR_NAMES } from '../shared/protocol';
+import { makeRoster } from '../shared/roster';
 
 type Tab = 'overzicht' | 'voorbereiding' | 'live' | 'beoordeling';
-type Device = 'Smartphone' | 'Desktop';
-
-type Trial = { kind: 'booking'; pair: Pair; version: Version; content: ContentVersion } | { kind: 'information'; id: InfoTaskId };
-interface Participant { code: string; device: Device; trials: Trial[]; }
-
-function makeRoster(): Participant[] {
-  const roster: Participant[] = [];
-  for (let n = 1; n <= 25; n++) {
-    const smartphone = n <= 13;
-    const index = smartphone ? n - 1 : n - 14;
-    const trials: Trial[] = [];
-    for (let offset = 0; offset < 6; offset++) {
-      const pair = (((index + offset) % 6) + 1) as Pair;
-      const k = pair - 1;
-      const combinations: [Version, ContentVersion, Version, ContentVersion][] = [
-        ['A', 'X', 'B', 'Y'], ['B', 'X', 'A', 'Y'], ['A', 'Y', 'B', 'Z'], ['B', 'Y', 'A', 'Z'],
-        ['A', 'Z', 'B', 'W'], ['B', 'Z', 'A', 'W'], ['A', 'W', 'B', 'X'], ['B', 'W', 'A', 'X'],
-      ];
-      const order = combinations[(index + k) % combinations.length];
-      trials.push({ kind: 'booking', pair, version: order[0], content: order[1] }, { kind: 'booking', pair, version: order[2], content: order[3] });
-      if (offset === 1 || offset === 3) trials.push({ kind: 'information', id: INFO_TASK_IDS[(index + offset) % INFO_TASK_IDS.length] });
-      if (offset === 5) trials.push({ kind: 'information', id: 'I5' });
-    }
-    roster.push({ code: `D${String(n).padStart(2, '0')}`, device: smartphone ? 'Smartphone' : 'Desktop', trials });
-  }
-  return roster;
-}
-
 const roster = makeRoster();
 function ResearchHeader({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void }) {
   const tabs: { key: Tab; label: string }[] = [
@@ -75,7 +48,7 @@ function DemoLauncher() {
 function Overview({ selected, setSelected }: { selected: string; setSelected: (code: string) => void }) {
   const participant = roster.find(item => item.code === selected)!;
   return <>
-    <div className="research-page-heading"><div><p className="research-kicker">PWS · Fysiotherapie Valkenswaard</p><h1>Onderzoeksoverzicht</h1><p>Voorbeeld van het vaste rooster en de te bouwen bediening.</p></div><a className="research-secondary" href="/print/opdrachten" target="_blank" rel="noreferrer">Opdrachtkaarten printen</a></div>
+    <div className="research-page-heading"><div><p className="research-kicker">PWS · Fysiotherapie Valkenswaard</p><h1>Onderzoeksoverzicht</h1><p>Vast rooster voor D01–D25.</p></div><div className="research-downloads"><a className="research-secondary" href="/deelnemer" target="_blank" rel="noreferrer">Deelnemersscherm openen</a><a className="research-secondary" href="/deelnemers.csv" download>Rooster-CSV</a><a className="research-secondary" href="/api/taakduren.csv" download>Taakduren-CSV</a><a className="research-secondary" href="/print/opdrachten" target="_blank" rel="noreferrer">Opdrachtkaarten printen</a></div></div>
     <div className="stat-grid"><div className="stat-card"><strong>25</strong><span>geplande deelnemers</span></div><div className="stat-card"><strong>13</strong><span>smartphone</span></div><div className="stat-card"><strong>12</strong><span>desktop</span></div><div className="stat-card"><strong>15</strong><span>taken per deelnemer</span></div></div>
     <div className="research-columns">
       <section className="research-card"><div className="card-heading"><div><p className="research-kicker">Rooster</p><h2>Deelnemers</h2></div></div>

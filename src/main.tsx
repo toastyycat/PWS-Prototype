@@ -5,6 +5,7 @@ import '@fontsource/noto-sans/600.css';
 import '@fontsource/noto-sans/700.css';
 import './style.css';
 import { BookingApp } from './participant/BookingApp';
+import { ParticipantSession } from './participant/ParticipantSession';
 import { ResearchApp } from './researcher/ResearchApp';
 import { DESIGN_PAIRS, getCombinedVariant, getScenario, parseDemoQuery } from './shared/protocol';
 import type { ContentVersion, InfoTaskId, Pair, TaskChoice } from './shared/protocol';
@@ -41,7 +42,9 @@ function ParticipantDemo() {
 
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    {path === '/onderzoek' || path === '/print/opdrachten' ? (
+    {path === '/deelnemer' ? (
+      <ParticipantSession />
+    ) : path === '/onderzoek' || path === '/print/opdrachten' ? (
       <ResearchApp printMode={path === '/print/opdrachten'} />
     ) : (
       <ParticipantDemo />

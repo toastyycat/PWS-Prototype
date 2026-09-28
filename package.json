@@ -4,11 +4,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
+    "roster": "node --experimental-strip-types scripts/generate-roster.mjs",
+    "dev": "vite --configLoader runner --host 0.0.0.0",
+    "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
-    "preview": "vite preview --host 0.0.0.0"
+    "preview": "vite preview --configLoader runner --host 0.0.0.0"
   },
   "dependencies": {
     "@fontsource/noto-sans": "5.2.8",
