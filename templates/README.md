@@ -9,7 +9,6 @@ Eén regel per taak per deelnemer. Dit is hetzelfde format dat wij voor ons eige
 | Kolom | Inhoud |
 |---|---|
 | `deelnemerscode` | Bijvoorbeeld `D07`. |
-| `bron` | `echt` voor een echte deelnemer. Gesimuleerde of verzonnen gegevens krijgen `gesimuleerd` en worden nooit als echte data gerapporteerd. |
 | `apparaat` | Telefoon en browser, bijvoorbeeld `Android (Chrome)` of `iPhone (Safari)`. |
 | `datum` | Datum van de sessie (JJJJ-MM-DD). |
 | `volgorde` | 1, 2, 3 … de volgorde van de taken bij deze deelnemer. |
@@ -41,7 +40,7 @@ Eén regel per deelnemer.
 
 | Kolom | Inhoud |
 |---|---|
-| `deelnemerscode`, `bron`, `apparaat`, `datum` | Zoals hierboven. |
+| `deelnemerscode`, `apparaat`, `datum` | Zoals hierboven. |
 | `leeftijd` | Leeftijd in jaren. |
 | `smartphonegebruik` | Hoe vaak de deelnemer een smartphone gebruikt. |
 | `digitale_diensten` | Hoe vaak de deelnemer online diensten gebruikt (bank, DigiD, webwinkel). |
