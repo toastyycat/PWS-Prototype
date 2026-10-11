@@ -95,7 +95,7 @@ The full step-by-step script, with the exact Dutch wording and the error rules, 
 ## Data and privacy
 
 - The app stores only `participant code; task; duration in seconds` in `data/taakduren.csv`, on the researcher's laptop. Set `PWS_RESULTS_DIR` to store it elsewhere. The `data/` folder is never committed to Git.
-- Record everything else in the templates in [`templates/`](templates/): one row per task in `sessieregistratie.csv` and one row per participant in `deelnemers-achtergrond.csv`. Use participant codes only, never names.
+- Record everything else in the templates in [`templates/`](templates/): one row per task in `sessieregistratie.csv` and one row per participant in `deelnemers-achtergrond.csv`. Use participant codes only, never names. The column definitions are in [`templates/README.md`](templates/README.md).
 - Screen recordings can show faces or voices. Store them outside cloud-synced folders, keep the link between names and codes separate, and delete everything after the retention period agreed in the consent form.
 - No real health data, accounts, passwords or appointments are involved. All people, places and content on the practice website are fictional.
 

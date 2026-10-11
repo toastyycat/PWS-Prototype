@@ -71,7 +71,7 @@ Iedere schermovergang wacht 1,4 seconde, in alle varianten.
 6. **Code invoeren** op het testapparaat en op **Start sessie** drukken. De tijd loopt vanaf het moment dat het homescherm verschijnt. Lees de opdracht daarom vóór **Start sessie** of **Verder naar TXX** voor en leg de kaart naast het apparaat.
 7. **Na elke taak** de twee schaalvragen stellen, ook als de taak niet lukte, en een regel invullen in [`sessieregistratie.csv`](templates/sessieregistratie.csv).
 8. **Pauze** aanbieden na T04 en na T09, of eerder als iemand dat nodig heeft.
-9. **Na T15** een kort nagesprek houden, opnames stoppen en bedanken.
+9. **Na de laatste taak** een kort nagesprek houden met de vijf vragen uit [`deelnemers-achtergrond.csv`](templates/README.md#deelnemers-achtergrondcsv), opnames stoppen en bedanken.
 10. **Data veiligstellen.** Download `taakduren.csv` via `/onderzoek` of `/api/taakduren.csv`. Bewaar opnames in een lokale map buiten iCloud, OneDrive of Google Drive.
 
 ### Vaste regels tijdens een taak
