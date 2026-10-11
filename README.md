@@ -4,43 +4,51 @@
 
 This repository contains the test prototype from a Dutch secondary-school research project (profielwerkstuk, VWO). The study asks:
 
-> How can text size, navigation, contrast, micro-interactions and loading feedback help adults aged 65+ with little digital experience book an appointment on their own, with as little frustration and uncertainty as possible?
+> How can text size, navigation, contrast and loading feedback help adults aged 65+ with little digital experience book an appointment on their own, with as little frustration and uncertainty as possible?
 
-Participants book fictional appointments at a fictional physiotherapy practice. The researcher switches individual design features on or off and compares how fast, how independently and how comfortably participants complete each booking.
+Participants book fictional appointments at a fictional physiotherapy practice on a smartphone. The researcher switches individual design features on or off and compares how fast, how independently and how comfortably participants complete each booking.
 
 We had only a small number of participants ourselves, so we are publishing the prototype and the protocol. **Anyone may run the same study** and share their (anonymised) results. Everything you need is in this repository.
 
 ## What is being tested
 
-The prototype implements five design features. Each can be switched on or off independently:
+The study compares four design features:
 
-| # | Feature | Off (A) | On (B) |
+| # | Feature | Feature left out | Feature on |
 |---|---|---|---|
 | 1 | Text size | 16 px base text | 24 px base text and larger headings |
-| 2 | Navigation | *Back* and *Next* hidden behind a *Menu* button | *Back* and *Next* always visible |
+| 2 | Clear navigation | *Back* and *Next* hidden behind a *Menu* button | *Back* and *Next* always visible |
 | 3 | Contrast | All text and controls below a 4.5:1 contrast ratio | Contrast of at least 4.5:1 |
-| 4 | Micro-interactions | No animation, hover or press feedback | Screen and element animations, hover/press feedback, colour transitions |
-| 6 | Loading feedback | Current page stays unchanged during the 1.4 s wait | Skeleton of the next page during the 1.4 s wait |
+| 6 | Loading screen | Current page stays unchanged during the 1.4 s wait | Skeleton of the next page during the 1.4 s wait |
 
-Comparison 5 sets *all* features off against *all* features on.
+Each comparison is an A/B pair. **Variant B is the complete design, with all four features on. Variant A is the same design with exactly one feature left out**: the one being tested. So every task shows an almost complete design, and the difference between A and B isolates what that single feature adds. Each screen transition waits 1.4 seconds in every variant, so only the feedback during the wait differs.
 
-For the single-feature comparisons (1, 2, 3, 4 and 6), variant B has every feature on and variant A has every feature on **except the one being tested**. Each screen transition waits 1.4 seconds in every variant, so only the feedback differs.
+## How we ran the original study
 
-### Session structure
+- **Smartphone only.** All sessions took place on a smartphone.
+- **Four comparisons**: text size, clear navigation, contrast and loading screen, each with one feature left out in variant A.
+- **Dropped**: the micro-interactions (animation) comparison was not part of the final study.
+- Each booking task names a service, date and time ("Make an appointment for an intake on Tuesday 6 October 2026 at 10:30"). Different targets (X, Y, Z, W) within a comparison prevent learning effects, and both tasks in a pair use the same month.
+- Screen recordings of the phone and the researchers' notes were the main sources for errors, hesitations and remarks.
 
-Every participant does 15 tasks in a fixed, counterbalanced order (see [`public/deelnemers.csv`](public/deelnemers.csv)):
+The paper with the full method and results will be linked here once it is finished.
 
-- **12 booking tasks**: six A/B pairs, one pair per comparison. Each task names a service, date and time ("Make an appointment for an intake on Tuesday 6 October 2026 at 10:30"). Four different targets (X, Y, Z, W) per comparison prevent learning effects, and both tasks in a pair use the same month.
-- **2 information tasks** (I1–I4): find a fact on the practice website. These are exploratory and not part of the A/B comparison.
-- **1 login task** (I5): log in with the fictional address `alex.voorbeeld@example.invalid`. Also exploratory.
+### What else the prototype can do
 
-Codes D01–D100 are pre-scheduled: 51 for smartphone and 49 for desktop. Comparison order and A/B order rotate between participants.
+The prototype supports more than we used. You can use these options to extend the study, but say so when you report results:
 
-### What is measured
+- a **micro-interactions** comparison (4): screen and element animations, hover and press feedback;
+- a **full design** comparison (5): all features off against all features on;
+- a **desktop** group: codes D01–D100 are pre-scheduled for 51 smartphone and 49 desktop participants;
+- **information tasks** (I1–I4) and a **login task** (I5) with the fictional address `alex.voorbeeld@example.invalid`, as exploratory extras.
+
+The participant route (`/deelnemer`) follows the built-in roster in [`public/deelnemers.csv`](public/deelnemers.csv), which still schedules all six comparisons plus the three extra tasks: 15 tasks per code, in rotating order. A code always runs all 15 tasks. To repeat only our four comparisons, change `src/shared/roster.ts`, run `npm run roster` and check the new CSV before use.
+
+## What is measured
 
 Per task:
 
-- **Time on task** in seconds, recorded automatically from the moment the home screen appears until the booking is correctly confirmed.
+- **Time on task** in seconds, from the moment the home screen appears until the booking is correctly confirmed. The app records this automatically; you can also measure it from the screen recording.
 - **Success**: completed independently within 3 minutes, yes or no.
 - **Errors**: wrong service, date or time, a wrong booking step, or an unnecessary or repeated confirmation. Opening the menu or scrolling is not an error.
 - **Frustration** and **uncertainty**, each on a 1–5 scale, asked right after the task.

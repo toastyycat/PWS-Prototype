@@ -1,6 +1,6 @@
 # Handleiding: het onderzoek zelf uitvoeren
 
-Dit prototype hoort bij een profielwerkstuk (vwo) over toegankelijke interfaces voor ouderen. De onderzoeksvraag is hoe tekstgrootte, navigatie, contrast, micro-interacties en laadfeedback eraan kunnen bijdragen dat 65-plussers met weinig digitale ervaring zelfstandig en met zo min mogelijk frustratie en onzekerheid een afspraak plannen.
+Dit prototype hoort bij een profielwerkstuk (vwo) over toegankelijke interfaces voor ouderen. De onderzoeksvraag is hoe tekstgrootte, duidelijke navigatie, contrast en een goed laadscherm eraan kunnen bijdragen dat 65-plussers met weinig digitale ervaring zelfstandig en met zo min mogelijk frustratie en onzekerheid een afspraak plannen.
 
 Wij hadden zelf weinig deelnemers. Daarom delen we het prototype en het protocol, zodat anderen het onderzoek kunnen herhalen. Deze handleiding beschrijft een sessie stap voor stap. Een Engelstalig overzicht staat in de [README](README.md).
 
@@ -42,14 +42,22 @@ Elke deelnemerscode heeft vijftien taken in een vaste volgorde ([`public/deelnem
 
 Alleen de boekingen tellen mee in de A/B-vergelijking. Codes D01–D100 zijn vooraf ingedeeld: 51 voor smartphone en 49 voor desktop. Kies de code die bij het apparaat van de deelnemer past. Gebruik voor een proefsessie een code die je daarna niet meer gebruikt, en verwijder de testregels uit `data/taakduren.csv`. Anders denkt de app dat die code al bezig is.
 
+In ons onderzoek vergeleken we vier kenmerken. Variant B is steeds het volledige ontwerp met alle vier kenmerken aan. In variant A is precies één kenmerk weggelaten: het kenmerk dat getest wordt.
+
 | Paar | Kenmerk | A | B |
 |---|---|---|---|
 | 1 | Tekstgrootte | alles aan behalve grote tekst | alles aan |
-| 2 | Navigatie | alles aan behalve zichtbare Terug/Verder | alles aan |
+| 2 | Duidelijke navigatie | alles aan behalve zichtbare Terug/Verder | alles aan |
 | 3 | Contrast | alles aan behalve hoog contrast | alles aan |
-| 4 | Micro-interacties | alles aan behalve animatie en hover-/drukfeedback | alles aan |
-| 5 | Volledig ontwerp | alles uit | alles aan |
-| 6 | Laadfeedback | alles aan behalve skeletonscherm | alles aan |
+| 6 | Laadscherm | alles aan behalve skeletonscherm | alles aan |
+
+### Zo deden wij het
+
+- We testten alleen op een smartphone.
+- De vergelijking met animatie (micro-interacties) is weggevallen.
+- Schermopnames van de telefoon en onze notities waren de bron voor fouten, twijfels en uitspraken.
+
+Het prototype kan meer dan we gebruikten: paar 4 (micro-interacties), paar 5 (alles uit tegenover alles aan), een desktopgroep en de extra opdrachten I1–I5. Het ingebouwde rooster plant die nog steeds in, en een code doorloopt altijd alle vijftien taken. Wil je alleen onze vier vergelijkingen herhalen, pas dan `src/shared/roster.ts` aan en draai `npm run roster`. Vermeld bij je resultaten welke vergelijkingen je gebruikte.
 
 Iedere schermovergang wacht 1,4 seconde, in alle varianten.
 
