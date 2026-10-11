@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BOOKING_MONTHS, getScenario, getVariant, INFO_TASKS, isBookableDate, parseDemoQuery } from '../src/shared/protocol.ts';
+import { BOOKING_MONTHS, DESIGN_PAIRS, getCombinedVariant, getScenario, getVariant, INFO_TASKS, isBookableDate, parseDemoQuery } from '../src/shared/protocol.ts';
 
 test('every weekday in all six months is bookable and weekends are closed', () => {
   for (const month of BOOKING_MONTHS) {
@@ -31,7 +31,7 @@ test('four isolated comparisons change only their measured setting', () => {
     const a = getVariant(pair, 'A');
     const b = getVariant(pair, 'B');
     const changed = Object.keys(a).filter(key => a[key] !== b[key] && key !== 'version');
-    assert.deepEqual(changed, [['largeText'], ['visibleNavigation'], ['highContrast'], ['animatedConfirmation']][pair - 1]);
+    assert.deepEqual(changed, [['largeText'], ['visibleNavigation'], ['highContrast'], ['microInteractions']][pair - 1]);
   }
 });
 
@@ -61,4 +61,34 @@ test('researcher links preserve several selected assignments', () => {
   assert.equal(parsed.content, 'Y');
   assert.deepEqual(parseDemoQuery('?opdrachten=').selectedTasks, []);
   assert.deepEqual(parseDemoQuery('?info=I5').selectedTasks, ['I5']);
+});
+
+const features = { 1: 'largeText', 2: 'visibleNavigation', 3: 'highContrast', 4: 'microInteractions', 6: 'skeletonLoading' };
+test('each individual A leaves out just one feature and B enables the complete design', () => {
+  for (const pair of DESIGN_PAIRS) {
+    const a = getVariant(pair, 'A');
+    const b = getVariant(pair, 'B');
+    for (const feature of DESIGN_PAIRS) {
+      assert.equal(a[features[feature]], feature !== pair);
+      assert.equal(b[features[feature]], true);
+    }
+    assert.equal(a.emphasizedAction, true);
+    assert.equal(b.emphasizedAction, true);
+    for (const version of ['A', 'B']) {
+      const parsed = parseDemoQuery(`?paar=${pair}&variant=${version}`);
+      const combined = getCombinedVariant(parsed.selectedDesigns);
+      for (const key of [...Object.values(features), 'emphasizedAction']) assert.equal(combined[key], getVariant(pair, version)[key]);
+    }
+  }
+});
+test('full design comparison switches the whole package and manual toggles keep feedback independent', () => {
+  for (const version of ['A', 'B']) {
+    const config = getVariant(5, version);
+    for (const key of [...Object.values(features), 'emphasizedAction']) assert.equal(config[key], version === 'B');
+  }
+  const manual = getCombinedVariant([1, 2, 3, 6]);
+  assert.equal(manual.microInteractions, false);
+  assert.equal(manual.skeletonLoading, true);
+  assert.deepEqual(parseDemoQuery('').selectedDesigns, DESIGN_PAIRS);
+  assert.deepEqual(parseDemoQuery('?designs=').selectedDesigns, []);
 });

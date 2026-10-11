@@ -5,11 +5,23 @@ export type Trial =
   | { kind: 'information'; id: InfoTaskId };
 export interface Participant { code: string; device: 'Smartphone' | 'Desktop'; trials: Trial[] }
 
+export const MAX_PARTICIPANTS = 100;
+export function deviceForNumber(n: number): Participant['device'] {
+  // Bewaar D01–D25 ongewijzigd; nieuwe codes vullen beide apparaatgroepen aan.
+  return n <= 13 || (n >= 26 && n % 2 === 0) ? 'Smartphone' : 'Desktop';
+}
+
+export function participantCode(n: number): string {
+  return `D${String(n).padStart(2, '0')}`;
+}
+
 export function makeRoster(): Participant[] {
   const roster: Participant[] = [];
-  for (let n = 1; n <= 25; n++) {
-    const smartphone = n <= 13;
-    const index = smartphone ? n - 1 : n - 14;
+  let smartphoneIndex = 0;
+  let desktopIndex = 0;
+  for (let n = 1; n <= MAX_PARTICIPANTS; n++) {
+    const smartphone = deviceForNumber(n) === 'Smartphone';
+    const index = smartphone ? smartphoneIndex++ : desktopIndex++;
     const trials: Trial[] = [];
     for (let offset = 0; offset < 6; offset++) {
       const pair = (((index + offset) % 6) + 1) as Pair;
@@ -23,7 +35,7 @@ export function makeRoster(): Participant[] {
       if (offset === 1 || offset === 3) trials.push({ kind: 'information', id: (['I1', 'I2', 'I3', 'I4'] as InfoTaskId[])[(index + offset) % 4] });
       if (offset === 5) trials.push({ kind: 'information', id: 'I5' });
     }
-    roster.push({ code: `D${String(n).padStart(2, '0')}`, device: smartphone ? 'Smartphone' : 'Desktop', trials });
+    roster.push({ code: participantCode(n), device: smartphone ? 'Smartphone' : 'Desktop', trials });
   }
   return roster;
 }

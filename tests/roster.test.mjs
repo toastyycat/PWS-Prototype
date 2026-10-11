@@ -6,7 +6,12 @@ import { makeRoster } from '../src/shared/roster.ts';
 test('CSV contains the exact 15 assignments for every participant in order', () => {
   const rows = readFileSync(new URL('../public/deelnemers.csv', import.meta.url), 'utf8')
     .replace(/^\uFEFF/, '').trim().split(/\r?\n/).slice(1).map(line => line.split(';'));
-  assert.equal(rows.length, 375);
+  assert.equal(rows.length, makeRoster().length * 15);
+  assert.equal(makeRoster().length, 100);
+  assert.equal(new Set(makeRoster().map(person => person.code)).size, 100);
+  assert.equal(makeRoster().filter(person => person.device === 'Smartphone').length, 51);
+  assert.equal(makeRoster().filter(person => person.device === 'Desktop').length, 49);
+  assert.equal(makeRoster()[99].code, 'D100');
   for (const person of makeRoster()) {
     const assigned = rows.filter(row => row[0] === person.code);
     assert.equal(assigned.length, 15, person.code);

@@ -21,7 +21,7 @@ function ResearchHeader({ tab, setTab }: { tab: Tab; setTab: (tab: Tab) => void 
 }
 
 function DemoLauncher() {
-  const [selectedDesigns, setSelectedDesigns] = useState<Pair[]>([]);
+  const [selectedDesigns, setSelectedDesigns] = useState<Pair[]>([...DESIGN_PAIRS]);
   const [tasks, setTasks] = useState<TaskChoice[]>(['X']);
   const [scale, setScale] = useState(100);
   const toggleTask = (task: TaskChoice) => setTasks(previous => previous.includes(task) ? previous.filter(item => item !== task) : [...previous, task]);
@@ -48,8 +48,8 @@ function DemoLauncher() {
 function Overview({ selected, setSelected }: { selected: string; setSelected: (code: string) => void }) {
   const participant = roster.find(item => item.code === selected)!;
   return <>
-    <div className="research-page-heading"><div><p className="research-kicker">PWS · Fysiotherapie Valkenswaard</p><h1>Onderzoeksoverzicht</h1><p>Vast rooster voor D01–D25.</p></div><div className="research-downloads"><a className="research-secondary" href="/deelnemer" target="_blank" rel="noreferrer">Deelnemersscherm openen</a><a className="research-secondary" href="/deelnemers.csv" download>Rooster-CSV</a><a className="research-secondary" href="/api/taakduren.csv" download>Taakduren-CSV</a><a className="research-secondary" href="/print/opdrachten" target="_blank" rel="noreferrer">Opdrachtkaarten printen</a></div></div>
-    <div className="stat-grid"><div className="stat-card"><strong>25</strong><span>geplande deelnemers</span></div><div className="stat-card"><strong>13</strong><span>smartphone</span></div><div className="stat-card"><strong>12</strong><span>desktop</span></div><div className="stat-card"><strong>15</strong><span>taken per deelnemer</span></div></div>
+    <div className="research-page-heading"><div><p className="research-kicker">PWS · Fysiotherapie Valkenswaard</p><h1>Onderzoeksoverzicht</h1><p>Beschikbare codes: {roster[0].code}–{roster[roster.length - 1].code}.</p></div><div className="research-downloads"><a className="research-secondary" href="/deelnemer" target="_blank" rel="noreferrer">Deelnemersscherm openen</a><a className="research-secondary" href="/deelnemers.csv" download>Rooster-CSV</a><a className="research-secondary" href="/api/taakduren.csv" download>Taakduren-CSV</a><a className="research-secondary" href="/print/opdrachten" target="_blank" rel="noreferrer">Opdrachtkaarten printen</a></div></div>
+    <div className="stat-grid"><div className="stat-card"><strong>{roster.length}</strong><span>beschikbare deelnemerscodes</span></div><div className="stat-card"><strong>{roster.filter(item => item.device === 'Smartphone').length}</strong><span>smartphone</span></div><div className="stat-card"><strong>{roster.filter(item => item.device === 'Desktop').length}</strong><span>desktop</span></div><div className="stat-card"><strong>15</strong><span>taken per deelnemer</span></div></div>
     <div className="research-columns">
       <section className="research-card"><div className="card-heading"><div><p className="research-kicker">Rooster</p><h2>Deelnemers</h2></div></div>
         <div className="participant-list">{roster.map(item => <button type="button" key={item.code} className={selected === item.code ? 'selected' : ''} onClick={() => setSelected(item.code)}><strong>{item.code}</strong><span>{item.device}</span><span className="roster-status">Gepland</span></button>)}</div>

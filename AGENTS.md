@@ -2,6 +2,10 @@
 
 Dit bestand is de overdracht aan het model dat de applicatie gaat bouwen. Het beschrijft een onderzoeksprototype voor fictieve fysiotherapieafspraken met React, TypeScript en Tailwind CSS. De gebruikerskeuzes zijn op 23 september 2026 besproken en vastgelegd. Tijdens het opstellen van dit bestand is geen applicatiecode gemaakt.
 
+## Aanvulling 1 oktober 2026
+
+De afzonderlijke tests (1, 2, 3, 4 en 6) vertrekken vanuit het volledig aangepaste ontwerp: A schakelt alleen het onderzochte kenmerk uit, B heeft alle vijf kenmerken aan. Paar 5 blijft alle basisinstellingen tegenover alle aanpassingen, inclusief het skeletonscherm. Hoofdactiehiërarchie blijft in de afzonderlijke tests gelijk. De schakelaar Animatie bestuurt alle micro-interacties: GSAP-scherm- en onderdeelanimaties, hover- en drukfeedback, kleurtransities en skeletonbeweging. Met Animatie uit verdwijnen de tijdelijke buttonstates. Gekozen opties, disabled-toestanden en toetsenbordfocus blijven herkenbaar. Tekstgrootte bestuurt ook de kopgroottes. Alle schermovergangen duren 1,4 seconde. Met Loader uit blijft de huidige pagina onveranderd zichtbaar zonder waas, blur of andere laadfeedback; de vertraging blijft gelijk. De actuele Word-methode en prototypekopieën zijn op uitdrukkelijk verzoek van de gebruiker aangepast; onderstaande oudere variantmatrix is vervangen door deze aanvulling.
+
 ## Aanvulling 24 september 2026
 
 Aanvulling 25 september 2026: in het opdrachtmenu kunnen meerdere knoppen tegelijk ingeschakeld zijn. De onderzoeker markeert welke opdracht bij het starten opent. De overige aangevinkte opdrachten blijven in de URL bewaard en krijgen in het onderzoekspaneel elk een eigen demolink.

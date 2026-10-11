@@ -10,7 +10,7 @@ type Session = { code: string; trials: ScheduledTrial[]; index: number };
 
 function normalizeCode(input: string): string {
   const number = Number(input.trim().toUpperCase().replace(/^D/, ''));
-  return Number.isInteger(number) && number >= 1 && number <= 25 ? `D${String(number).padStart(2, '0')}` : '';
+  return Number.isInteger(number) && number >= 1 && number <= 999 ? `D${String(number).padStart(2, '0')}` : '';
 }
 
 function readTrials(csv: string, code: string): ScheduledTrial[] {
@@ -34,13 +34,14 @@ export function ParticipantSession() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [pendingMs, setPendingMs] = useState<number | null>(null);
+  const [readyForNext, setReadyForNext] = useState(false);
   const startedAt = useRef<number | null>(null);
   const saving = useRef(false);
 
   const enter = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const code = normalizeCode(input);
-    if (!code) { setError('Vul een deelnemerscode van 1 tot en met 25 in.'); return; }
+    if (!code) { setError('Vul een geldig deelnemersnummer in.'); return; }
     setBusy(true); setError('');
     try {
       const [rosterResponse, progressResponse] = await Promise.all([
@@ -52,6 +53,7 @@ export function ParticipantSession() {
       const progress = await progressResponse.json() as { completed?: string[] };
       const completed = progress.completed;
       if (!Array.isArray(completed) || completed.some((task, index) => task !== trials[index]?.task)) throw new Error('De opgeslagen voortgang komt niet overeen met het rooster.');
+      setReadyForNext(completed.length > 0);
       setSession({ code, trials, index: completed.length });
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Deelnemer kon niet worden gestart.'); }
     finally { setBusy(false); }
@@ -70,6 +72,7 @@ export function ParticipantSession() {
       if (!response.ok) throw new Error('De taakduur kon niet worden opgeslagen. Probeer opnieuw.');
       setPendingMs(null);
       startedAt.current = null;
+      setReadyForNext(true);
       setSession(previous => previous ? { ...previous, index: previous.index + 1 } : previous);
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'Opslaan mislukt.'); }
     finally { saving.current = false; setBusy(false); }
@@ -78,7 +81,7 @@ export function ParticipantSession() {
   if (!session) return <main className="research-setup"><form className="research-setup-card participant-entry" onSubmit={enter}>
     <p className="research-setup-kicker">PWS · deelnemerssessie</p><h1>Deelnemerscode invoeren</h1>
     <p>Vul de code in die u van de onderzoeker heeft gekregen.</p>
-    <label htmlFor="participant-code">Deelnemerscode (1–25)</label>
+    <label htmlFor="participant-code">Deelnemerscode</label>
     <input id="participant-code" inputMode="numeric" autoComplete="off" value={input} onChange={event => setInput(event.target.value)} placeholder="Bijvoorbeeld 1 of D01" />
     {error && <p className="validation" role="alert">{error}</p>}
     <button type="submit" className="research-setup-start" disabled={busy}>Start sessie →</button>
@@ -87,6 +90,14 @@ export function ParticipantSession() {
   if (session.index >= session.trials.length) return <main className="research-setup"><div className="research-setup-card"><h1>Alle opdrachten zijn afgerond</h1><p>De sessie voor {session.code} is klaar. De taakduren staan in de resultaten-CSV.</p></div></main>;
 
   const trial = session.trials[session.index];
+  if (readyForNext) return <main className="research-setup"><div className="research-setup-card participant-next-task">
+    <p className="research-setup-kicker">Fysiotherapie Valkenswaard · oefenomgeving</p>
+    <h1>Terug naar het startmenu</h1>
+    <p>Taak {session.trials[session.index - 1]?.task} is afgerond.</p>
+    <div className="participant-next-task-number"><span>Volgende taak</span><strong>{trial.task}</strong></div>
+    <p>Pak de opdrachtkaart voor {trial.task}. Tik op Verder wanneer u klaar bent om te beginnen.</p>
+    <button type="button" className="research-setup-start" onClick={() => setReadyForNext(false)}>Verder naar {trial.task} →</button>
+  </div></main>;
   const pair = trial.kind === 'booking' ? trial.pair : 1;
   const version = trial.kind === 'booking' ? trial.version : 'A';
   const task = trial.kind === 'booking' ? trial.content : trial.id;

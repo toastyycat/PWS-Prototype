@@ -202,8 +202,8 @@ function DesktopNavGroup({ group, openPage }: { group: (typeof mainNavigation)[n
 
 function LoadingScreen({ skeleton, target }: { skeleton: boolean; target: Screen }) {
   const booking = ['service', 'date', 'time', 'review', 'profile'].includes(target);
-  return <div className={`loading-screen ${skeleton ? 'loading-skeleton' : 'loading-blank'}`} role="status" aria-live="polite">
-    <span className="visually-hidden">Pagina wordt geladen</span>
+  return <div className={`loading-screen ${skeleton ? 'loading-skeleton' : 'loading-blank'}`} role={skeleton ? 'status' : undefined} aria-live={skeleton ? 'polite' : undefined}>
+    {skeleton && <span className="visually-hidden">Pagina wordt geladen</span>}
     {skeleton && <div className="skeleton-layout" aria-hidden="true">
       {target !== 'confirmation' && <header className="skeleton-header"><div><i className="skeleton-brand" /><i className="skeleton-search" /><i className="skeleton-header-action" /></div><i className="skeleton-nav" /></header>}
       {target === 'confirmation' ? <main className="skeleton-confirmation"><div className="skeleton-confirmation-card"><i className="skeleton-circle" /><i className="skeleton-heading" /><i className="skeleton-line" /><div className="skeleton-review-rows">{[1, 2, 3].map(item => <i key={item} />)}</div><i className="skeleton-button" /></div></main>
@@ -265,17 +265,17 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
     if (state.screen !== 'home') bookingRef.current?.focus();
     window.scrollTo(0, 0);
   }, [state.screen, state.pageId]);
-  const isLargeFull = variant.pair === 5 && variant.largeText;
   const rootClass = [
     'participant-app', state.screen === 'home' ? 'is-home' : '',
     variant.largeText ? 'has-large-text' : '',
-    isLargeFull ? 'has-large-headings' : '',
+    variant.largeText ? 'has-large-headings' : '',
+    variant.microInteractions ? 'has-micro-interactions' : 'has-no-micro-interactions',
     variant.highContrast ? 'has-high-contrast' : '',
     !variant.highContrast ? 'has-low-contrast' : '',
     variant.emphasizedAction ? 'has-emphasized-action' : '',
   ].filter(Boolean).join(' ');
   const reducedMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const canAnimate = variant.animatedConfirmation && !reducedMotion;
+  const canAnimate = variant.microInteractions && !reducedMotion;
   useEffect(() => {
     if (!canAnimate || loading || state.screen === 'setup') return;
     const main = bookingRef.current;
@@ -343,7 +343,7 @@ export function BookingApp({ scenario, selectedTasks, activeTask, variant, selec
       <div className="research-setup-card">
         <p className="research-setup-kicker">PWS · onderzoeksvoorbereiding</p>
         <h1>Stel de oefenopdracht in</h1>
-        <p>Zet één of meer ontwerpkenmerken aan. U kunt ook meerdere opdrachten tegelijk kiezen.</p>
+        <p>Begin met alles aan en zet voor een afzonderlijke test alleen het onderzochte kenmerk uit. U kunt meerdere opdrachten tegelijk kiezen.</p>
         <div className="research-setup-fields">
           <fieldset className="toggle-fieldset test-selector"><legend>Testformat</legend><button type="button" role="switch" className="research-toggle switch-toggle all-toggle" aria-checked={DESIGN_PAIRS.every(pair => selectedDesigns.includes(pair))} onClick={onAllDesignsToggle}><span>Alles</span><i aria-hidden="true" /></button><div className="toggle-grid test-toggles">
             {DESIGN_PAIRS.map(pair => <button type="button" role="switch" key={pair} className="research-toggle switch-toggle test-card-toggle" aria-checked={selectedDesigns.includes(pair)}

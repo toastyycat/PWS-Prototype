@@ -26,7 +26,7 @@ export interface VariantConfig {
   largeText: boolean;
   visibleNavigation: boolean;
   highContrast: boolean;
-  animatedConfirmation: boolean;
+  microInteractions: boolean;
   emphasizedAction: boolean;
   skeletonLoading: boolean;
 }
@@ -97,15 +97,17 @@ export function isBookableDate(iso: string): boolean {
 }
 
 export function getVariant(pair: Pair, version: Version): VariantConfig {
-  const isB = version === 'B';
+  // A laat alleen het onderzochte kenmerk weg; B bevat het volledige ontwerp.
+  // Paar 5 blijft de vergelijking tussen alle basis- en alle aangepaste instellingen.
+  const enabled = (feature: Pair) => version === 'B' || (pair !== 5 && pair !== feature);
   return {
     pair, version,
-    largeText: isB && (pair === 1 || pair === 5),
-    visibleNavigation: isB && (pair === 2 || pair === 5),
-    highContrast: isB && (pair === 3 || pair === 5),
-    animatedConfirmation: isB && (pair === 4 || pair === 5),
-    emphasizedAction: isB && pair === 5,
-    skeletonLoading: isB && pair === 6,
+    largeText: enabled(1),
+    visibleNavigation: enabled(2),
+    highContrast: enabled(3),
+    microInteractions: enabled(4),
+    emphasizedAction: version === 'B' || pair !== 5,
+    skeletonLoading: enabled(6),
   };
 }
 
@@ -118,8 +120,8 @@ export function getCombinedVariant(selectedDesigns: Pair[]): VariantConfig {
     largeText: selected.has(1),
     visibleNavigation: selected.has(2),
     highContrast: selected.has(3),
-    animatedConfirmation: selected.has(4),
-    emphasizedAction: all,
+    microInteractions: selected.has(4),
+    emphasizedAction: selected.size > 0,
     skeletonLoading: selected.has(6),
   };
 }
@@ -145,7 +147,9 @@ export function parseDemoQuery(search: string): { pair: Pair; version: Version; 
   const version = query.get('variant') === 'B' ? 'B' : 'A';
   const selectedDesigns = query.has('designs')
     ? [...new Set((query.get('designs') || '').split(',').map(Number).filter((value): value is Pair => DESIGN_PAIRS.includes(value as Pair)))]
-    : version === 'B' ? (pair === 5 ? [...DESIGN_PAIRS] : DESIGN_PAIRS.includes(pair) ? [pair] : []) : [];
+    : query.has('paar') || query.has('variant')
+      ? DESIGN_PAIRS.filter(feature => version === 'B' || (pair !== 5 && pair !== feature))
+      : [...DESIGN_PAIRS];
   const content = (['X', 'Y', 'Z', 'W'].includes(query.get('inhoud') || '') ? query.get('inhoud') : 'X') as ContentVersion;
   const candidate = query.get('info') as InfoTaskId | null;
   const infoTask = candidate && candidate in INFO_TASKS ? candidate : null;

@@ -31,7 +31,7 @@ async function handle(request: IncomingMessage, response: ServerResponse, next: 
     response.end(existsSync(resultsPath) ? readFileSync(resultsPath) : header);
     return;
   }
-  const progress = path.match(/^\/api\/voortgang\/(D(?:0[1-9]|1\d|2[0-5]))$/);
+  const progress = path.match(/^\/api\/voortgang\/(D\d{2,3})$/);
   if (progress && request.method === 'GET') {
     const tasks = rosterFor(progress[1]);
     if (tasks.length !== 15) return json(response, 404, { error: 'Deelnemerscode niet gevonden.' });
@@ -45,7 +45,7 @@ async function handle(request: IncomingMessage, response: ServerResponse, next: 
       if (body.length > 1000) return json(response, 413, { error: 'Verzoek te groot.' });
     }
     const { code, task, durationMs } = JSON.parse(body);
-    if (typeof code !== 'string' || !/^D(?:0[1-9]|1\d|2[0-5])$/.test(code) || typeof task !== 'string' || !/^T(?:0[1-9]|1[0-5])$/.test(task)
+    if (typeof code !== 'string' || !/^D\d{2,3}$/.test(code) || typeof task !== 'string' || !/^T(?:0[1-9]|1[0-5])$/.test(task)
       || typeof durationMs !== 'number' || !Number.isFinite(durationMs) || durationMs < 0 || durationMs > 3_600_000) {
       return json(response, 400, { error: 'Ongeldige taakregistratie.' });
     }
