@@ -31,7 +31,22 @@ Each comparison is an A/B pair. **Variant B is the complete design, with all fou
 - Each booking task names a service, date and time ("Make an appointment for an intake on Tuesday 6 October 2026 at 10:30"). Different targets (X, Y, Z, W) within a comparison prevent learning effects, and both tasks in a pair use the same month.
 - Screen recordings of the phone and the researchers' notes were the main sources for errors, hesitations and remarks.
 
-The paper with the full method and results will be linked here once it is finished.
+Five participants aged 70 and older took part, each on a smartphone, with 19 tasks in total: 11 bookings and 8 information searches.
+
+The full paper (method, results and discussion) is in [`paper/PWS-English-publication.pdf`](paper/PWS-English-publication.pdf).
+
+## Results in brief
+
+These results are preliminary: the sample was small and each feature was mostly tested with one type of task.
+
+- Four of the ten assessed bookings and six of the eight information tasks were successful.
+- **Hidden navigation** caused the clearest problems: three of four participants searched for the next step, and one could not find it.
+- **Smaller text** coincided with more errors when choosing a service and a time, although this may partly be a learning effect.
+- **Lower contrast** made reading harder for two participants but did not lead to failed tasks.
+- We observed no effect of missing **loading feedback**.
+- Several problems were unrelated to the four features, such as a prominent booking button that distracted participants during information tasks.
+
+We need more participants to draw firmer conclusions. That is why the prototype and materials are public.
 
 ### What else the prototype can do
 
@@ -122,7 +137,8 @@ Report results per device group, using only valid paired observations. A technic
 | `server/taskCsv.ts` | Vite plugin that saves task durations. |
 | `scripts/illustrator/` | Illustrator script that turns the roster into A4 task cards. |
 | `templates/` | Consent form and registration templates. |
-| `docs/` | Method of the original study (Dutch, Word). |
+| `paper/` | The full paper (English, PDF). |
+| `docs/` | Earlier method documents (Dutch, Word). |
 | `INHOUD_EN_TESTROUTES.md` | Routes, tasks and site structure (Dutch). |
 | `AGENTS.md` | Original build brief for the prototype (Dutch). |
 
