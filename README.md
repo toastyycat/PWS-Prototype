@@ -55,7 +55,7 @@ De interface en de opdrachten zijn in het Nederlands, omdat de deelnemers Nederl
 2. **Vraag toestemming** voor deelname en, apart, voor de schermopname. Een sjabloon staat in [`templates/`](templates/).
 3. **Draai de app op een laptop** en open op de testtelefoon het adres van de laptop met poort 4310.
 4. **Zet per opdracht** op het instelscherm één kenmerk uit en kies de opdracht. Start de schermopname, lees de opdracht voor en geef de telefoon aan de deelnemer. Geef in principe geen hints.
-5. **Na de vier opdrachten** vult de deelnemer een kort formulier met open vragen in.
+5. **Na de vier opdrachten** vult de deelnemer een [kort formulier](https://docs.google.com/forms/d/e/1FAIpQLSfVgJnUne8z5FG6zDNFzchugg2IhoVV1Stpc04yeh-yjA8JZw/viewform) met open vragen in.
 6. **Meet achteraf** tijd, slagen en fouten uit de schermopnames en je notities.
 
 Het volledige verloop staat in [`HANDLEIDING.md`](HANDLEIDING.md).

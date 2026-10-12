@@ -65,7 +65,7 @@ Varieer per deelnemer welke opdracht bij welk kenmerk hoort en in welke volgorde
 
 ### Formulier na de sessie
 
-Wij gebruikten een kort online formulier met zeven open vragen:
+Wij gebruikten een kort [online formulier](https://docs.google.com/forms/d/e/1FAIpQLSfVgJnUne8z5FG6zDNFzchugg2IhoVV1Stpc04yeh-yjA8JZw/viewform) met zeven open vragen. Je kunt het bekijken, of een kopie maken voor je eigen onderzoek:
 
 1. Wat is uw deelnemercode?
 2. Welke onderdelen vond u makkelijk?
