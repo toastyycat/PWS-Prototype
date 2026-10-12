@@ -2,13 +2,12 @@
 
 Deze map bevat de resultaten van de gebruikstest van de afsprakenwebsite voor ouderen. Het onderzoek is gedaan door twee scholieren voor het profielwerkstuk op de vwo.
 
-Je hoeft geen programmeur te zijn om deze map te begrijpen. Begin met de paper.
+Je hoeft geen programmeur te zijn om deze map te begrijpen. Begin met de samenvatting hieronder.
 
 ## Wat staat er in?
 
 | Bestand of map | Wat is het? |
 |---|---|
-| [`PWS-English-publication.pdf`](PWS-English-publication.pdf) | De volledige paper in het Engels: de vraag, de methode, de resultaten, de conclusies en de discussie. Begin hier. |
 | [`tabellen.md`](tabellen.md) | De belangrijkste cijfers in tabellen: hoeveel taken lukten, hoe lang ze duurden en welke fouten er voorkwamen. |
 | `figuren/` | Drie figuren bij de resultaten: een overzicht per deelnemer, het aantal geslaagde taken en de taakduur. |
 

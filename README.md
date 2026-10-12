@@ -8,7 +8,7 @@ Deelnemers boeken op een telefoon fictieve afspraken en zoeken informatie op de 
 
 We hadden zelf maar weinig deelnemers. Daarom delen we het prototype en de methode, zodat **iedereen het onderzoek kan herhalen** en de (geanonimiseerde) resultaten kan delen.
 
-> **Wil je alleen de resultaten lezen?** Ga naar de map [`resultaten/`](resultaten/README.md). Daar staat de paper en een uitleg in gewone taal.
+> **Wil je alleen de resultaten lezen?** Ga naar de map [`resultaten/`](resultaten/README.md). Daar staan de tabellen, figuren en een uitleg in gewone taal.
 
 ## Wat wordt getest?
 
@@ -91,7 +91,7 @@ Een technische storing is een ongeldige meting, geen fout van de deelnemer.
 | `server/taskCsv.ts` | De Vite-plugin die de taakduren opslaat. |
 | `scripts/illustrator/` | Illustrator-script dat het rooster omzet naar A4-opdrachtkaarten. |
 | `templates/` | Toestemmingsformulier en registratiesjablonen. |
-| `resultaten/` | Paper, tabellen en figuren van de resultaten van D01 tot D05. |
+| `resultaten/` | Tabellen en figuren van de resultaten van D01 tot D05. |
 | `docs/METHODE.md` | Onderzoeksvragen en methode, uit de eindversie van het verslag. |
 | `HANDLEIDING.md` | Stap-voor-stap-handleiding voor een sessie. |
 | `INHOUD_EN_TESTROUTES.md` | Routes, opdrachten en de inhoud van de website. |
