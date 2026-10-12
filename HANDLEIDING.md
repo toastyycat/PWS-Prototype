@@ -1,16 +1,22 @@
 # Handleiding: het onderzoek zelf uitvoeren
 
-Dit prototype hoort bij een profielwerkstuk (vwo) over toegankelijke interfaces voor ouderen. De onderzoeksvraag is hoe tekstgrootte, duidelijke navigatie, contrast en een goed laadscherm eraan kunnen bijdragen dat 65-plussers met weinig digitale ervaring zelfstandig en met zo min mogelijk frustratie en onzekerheid een afspraak plannen.
+Deze handleiding beschrijft stap voor stap hoe wij een sessie uitvoerden, zodat je het onderzoek kunt herhalen. De volledige methode staat in [`docs/METHODE.md`](docs/METHODE.md).
 
-Wij hadden zelf weinig deelnemers. Daarom delen we het prototype en het protocol, zodat anderen het onderzoek kunnen herhalen. Deze handleiding beschrijft een sessie stap voor stap. Een Engelstalig overzicht staat in de [README](README.md).
+## Kort samengevat
+
+- Iedere deelnemer krijgt **vier opdrachten op een telefoon**: in principe twee afspraken boeken en twee keer informatie op de website zoeken.
+- Bij elke opdracht staat **precies één kenmerk uit**: tekstgrootte, navigatie, contrast of laadfeedback. De andere drie staan aan. Zo krijgt iedere deelnemer elke conditie één keer.
+- De **animaties staan altijd aan**. Er is geen versie met alles aan en geen versie met alles uit.
+- Na de vier opdrachten vult de deelnemer een **kort formulier met open vragen** in. Er zijn geen cijfervragen na iedere opdracht.
 
 ## Wat je nodig hebt
 
-- Een laptop met [Node.js](https://nodejs.org/) 22.6 of nieuwer. Deze laptop draait de app en slaat de taakduren op.
-- Een testtelefoon of tweede computer voor de deelnemer, op hetzelfde wifi-netwerk of een hotspot.
-- Twee onderzoekers: een begeleider die voorleest en de vragen stelt, en een registrator die observeert en noteert.
-- Geprinte opdrachtkaarten, het toestemmingsformulier en het registratieformulier.
-- Eventueel schermopname op het testapparaat en een camera of microfoon voor gezicht en stem. De app neemt zelf niets op.
+- Een laptop met [Node.js](https://nodejs.org/) 22.6 of nieuwer die de app draait.
+- Een testtelefoon op hetzelfde wifi-netwerk, of een hotspot van een telefoon die níet de testtelefoon is.
+- Schermopname op de testtelefoon (de ingebouwde opname werkt). De app neemt zelf niets op.
+- Het [toestemmingsformulier](templates/toestemmingsformulier.md), het registratiesjabloon en papier voor notities.
+- Een kort online formulier voor na de sessie (zie hieronder).
+- Bij voorkeur twee onderzoekers: één begeleidt, één noteert.
 
 ## Prototype starten
 
@@ -21,93 +27,68 @@ npm run build
 npm run preview
 ```
 
-Vite toont een **Network**-adres, bijvoorbeeld `http://192.168.1.20:4310`. Open op het testapparaat dat adres met `/deelnemer` erachter. Gebruik `npm run dev` voor ontwikkeling met hot reload. Draai de app altijd via Vite: een eenvoudige statische server geeft bij verversen van `/deelnemer`, `/onderzoek` en `/informatie/...` een 404 en kan de taakduren niet opslaan.
+De server luistert op poort 4310 op alle netwerkverbindingen. Zoek het lokale IP-adres van de laptop op (bijvoorbeeld `192.168.1.20`) en open op de testtelefoon `http://<dat adres>:4310/`. Laat de laptop niet in slaapstand gaan.
 
-Op school- of openbaar wifi kan de telefoon de laptop vaak niet bereiken. Gebruik dan een hotspot van een telefoon die níet de testtelefoon is. Laat de laptop niet in slaapstand gaan.
+## Een opdracht klaarzetten
 
-| Route | Gebruik |
-|---|---|
-| `/deelnemer` | Deelnemerssessie. Voer een code van 1 tot en met 100 in (`1` en `D01` werken allebei). |
-| `/onderzoek` | Onderzoeksoverzicht met rooster, downloads van de rooster-CSV en de taakduren-CSV. |
-| `/print/opdrachten` | Opdrachtkaarten voor alle deelnemers, om te printen. |
-| `/` | Demo: zet ontwerpkenmerken en opdrachten vrij aan of uit. Niet voor metingen. |
+Wij gebruikten het instelscherm op `/`. Dat zet je op de telefoon klaar voordat je die aan de deelnemer geeft.
 
-## Het rooster
+1. Zet bij **Testformat** de schakelaar **Alles** aan.
+2. Zet daarna precies **één kenmerk uit**: **Tekstgrootte**, **Navigatie**, **Contrast** of **Geduld bij laden** (de laadfeedback). Laat **Animatie** aan.
+3. Kies bij **Opdrachten** één opdracht:
+   - **Boeking X, Y, Z of W**: een afspraak met een vaste dienst, datum en tijd, bijvoorbeeld "Maak een afspraak voor intake op dinsdag 6 oktober 2026 om 10.30 uur". De exacte zin staat onder de opdracht.
+   - **Siteopdracht I2**: "Zoek op de site welke voorbeeldlocatie van de praktijk wordt genoemd." (antwoord: Valkenswaard centrum)
+   - **Siteopdracht I4**: "Zoek de pagina Bewegen in een groep en vertel voor wie de activiteit bedoeld is."
+4. Druk op **Start deelnemersscherm** en geef de telefoon aan de deelnemer. De deelnemer ziet de instellingen en de opdracht niet.
+5. Laad na de opdracht `/` opnieuw om de volgende opdracht klaar te zetten.
 
-Elke deelnemerscode heeft vijftien taken in een vaste volgorde ([`public/deelnemers.csv`](public/deelnemers.csv)):
-
-- twaalf boekingen, verdeeld over zes A/B-paren (één paar per vergelijking);
-- twee informatieopdrachten (I1–I4), na het tweede en vierde boekingspaar;
-- één inlogopdracht (I5) met het fictieve adres `alex.voorbeeld@example.invalid`, na het zesde paar.
-
-Alleen de boekingen tellen mee in de A/B-vergelijking. Codes D01–D100 zijn vooraf ingedeeld: 51 voor smartphone en 49 voor desktop. Kies de code die bij het apparaat van de deelnemer past. Gebruik voor een proefsessie een code die je daarna niet meer gebruikt, en verwijder de testregels uit `data/taakduren.csv`. Anders denkt de app dat die code al bezig is.
-
-In ons onderzoek vergeleken we vier kenmerken. Variant B is steeds het volledige ontwerp met alle vier kenmerken aan. In variant A is precies één kenmerk weggelaten: het kenmerk dat getest wordt.
-
-| Paar | Kenmerk | A | B |
-|---|---|---|---|
-| 1 | Tekstgrootte | alles aan behalve grote tekst | alles aan |
-| 2 | Duidelijke navigatie | alles aan behalve zichtbare Terug/Verder | alles aan |
-| 3 | Contrast | alles aan behalve hoog contrast | alles aan |
-| 6 | Laadscherm | alles aan behalve skeletonscherm | alles aan |
-
-### Zo deden wij het
-
-- We testten alleen op een smartphone.
-- De vergelijking met animatie (micro-interacties) is weggevallen.
-- Schermopnames van de telefoon en onze notities waren de bron voor fouten, twijfels en uitspraken.
-
-Het prototype kan meer dan we gebruikten: paar 4 (micro-interacties), paar 5 (alles uit tegenover alles aan), een desktopgroep en de extra opdrachten I1–I5. Het ingebouwde rooster plant die nog steeds in, en een code doorloopt altijd alle vijftien taken. Wil je alleen onze vier vergelijkingen herhalen, pas dan `src/shared/roster.ts` aan en draai `npm run roster`. Vermeld bij je resultaten welke vergelijkingen je gebruikte.
-
-Iedere schermovergang wacht 1,4 seconde, in alle varianten.
+Varieer per deelnemer welke opdracht bij welk kenmerk hoort en in welke volgorde, zodat een kenmerk niet steeds met dezelfde opdracht samenvalt. Noteer per opdracht welk kenmerk uitstond. Zet het bedieningspaneel zo mogelijk in beeld van de opname; dan kun je de conditie achteraf controleren.
 
 ## Verloop van een sessie
 
-1. **Welkom.** Leg uit dat je de website test en niet de persoon. Vastlopen zegt iets over het ontwerp. De deelnemer mag altijd pauzeren of stoppen.
-2. **Toestemming.** Laat het [toestemmingsformulier](templates/toestemmingsformulier.md) tekenen, met aparte vinkjes voor deelname, schermopname en gezicht- of stemopname.
-3. **Achtergrond.** Vul een regel in [`deelnemers-achtergrond.csv`](templates/deelnemers-achtergrond.csv) in.
-4. **Uitleg.** Laat kort zien hoe tikken en scrollen werkt, zonder een boeking, zoek- of inlogopdracht voor te doen. Vraag de deelnemer hardop te vertellen wat hij of zij zoekt of onduidelijk vindt.
-5. **Opnames starten.** Geef een duidelijk startsignaal als je meerdere opnames later wilt synchroniseren.
-6. **Code invoeren** op het testapparaat en op **Start sessie** drukken. De tijd loopt vanaf het moment dat het homescherm verschijnt. Lees de opdracht daarom vóór **Start sessie** of **Verder naar TXX** voor en leg de kaart naast het apparaat.
-7. **Na elke taak** de twee schaalvragen stellen, ook als de taak niet lukte, en een regel invullen in [`sessieregistratie.csv`](templates/sessieregistratie.csv).
-8. **Pauze** aanbieden na T04 en na T09, of eerder als iemand dat nodig heeft.
-9. **Na de laatste taak** een kort nagesprek houden met de vijf vragen uit [`deelnemers-achtergrond.csv`](templates/README.md#deelnemers-achtergrondcsv), opnames stoppen en bedanken.
-10. **Data veiligstellen.** Download `taakduren.csv` via `/onderzoek` of `/api/taakduren.csv`. Bewaar opnames in een lokale map buiten iCloud, OneDrive of Google Drive.
+1. **Welkom.** Leg uit dat je de website test en niet de deelnemer. Vastlopen zegt iets over het ontwerp. De deelnemer mag altijd pauzeren of stoppen.
+2. **Toestemming.** Vraag toestemming voor deelname en, apart, voor de schermopname.
+3. **Achtergrond.** Noteer met alleen een deelnemerscode (bijvoorbeeld D06): apparaat, leeftijd en ervaring met de smartphone, en eventuele hulpmiddelen zoals een leesbril of stylus.
+4. **Per opdracht:** zet de opdracht klaar, start de schermopname, lees de opdracht voor en geef de telefoon aan de deelnemer. Geef in principe geen hints. Noteer wat opvalt en wat de deelnemer zegt.
+5. **Na de vier opdrachten** vult de deelnemer het formulier in (zie hieronder).
+6. **Afsluiten.** Bedank de deelnemer en zet de opnames in een lokale map buiten iCloud, OneDrive of Google Drive.
 
-### Vaste regels tijdens een taak
+### Regels tijdens een opdracht
 
-- **Geen hints.** Bij een hulpvraag zeg je: "Probeer het maar zoals u denkt dat het moet." Herhaal de opdracht als daarom gevraagd wordt; de tijd loopt door. Noteer de hulpvraag.
-- **Tijdgrens: 3 minuten.** Wil of kan de deelnemer niet verder, dan eindigt de taak als niet zelfstandig geslaagd. Er is geen afbreekknop: de begeleider maakt de taak af en de opgeslagen tijd is dan ongeldig. Noteer de echte stoptijd.
-- **Fout** is een verkeerde dienst, datum of tijd, een verkeerde boekingsstap of een onterechte of herhaalde bevestiging. Het menu openen, scrollen of een andere toegestane route nemen is geen fout.
-- **Verkeerde boeking.** De app toont wel "Afspraak geboekt", maar gaat niet door naar de volgende taak. De deelnemer moet zelf via **Afspraak wijzigen** herstellen. Zeg niet dat het fout is.
-- **Technische storing** is een ongeldige meting. Tel die niet als fout van de deelnemer.
-- **Informatieopdrachten** eindigen met **Ik heb het antwoord gevonden**. Die knop verschijnt alleen op de juiste pagina. Noteer het antwoord dat de deelnemer hardop geeft.
-- **Zoom.** De deelnemersroute staat vast op 100 %. Heeft iemand grotere tekst nodig, gebruik dan de zoom van het apparaat en houd die de hele sessie gelijk. Noteer dit.
+- **Geen hints.** Herhaal de opdracht als daarom gevraagd wordt. Noteer iedere hulpvraag.
+- **Vastlopen.** Er is geen harde tijdgrens. Loopt een deelnemer echt vast, dan helpt de onderzoeker, begint de opdracht opnieuw of wordt de opdracht gestopt. Noteer wat er gebeurde.
+- **Tijd.** De tijd loopt van het moment dat de website in beeld komt tot "Uw afspraak is geboekt" of tot het antwoord in beeld is. Meet die achteraf uit de schermopname, of met een stopwatch als de opname mislukt.
+- **Geslaagd.** Een boeking is alleen geslaagd als dienst, datum en tijd alle drie kloppen. Een informatieopdracht is geslaagd als de deelnemer het juiste antwoord vindt.
+- **Fouten.** Een verkeerde dienst, datum of tijd en een verkeerde stap in de route tellen als fout. Een zelf herstelde vergissing is wel een fout, maar geen mislukte opdracht.
+- **Verkeerde boeking.** De bevestiging ziet er hetzelfde uit als bij een juiste boeking. Zeg niet dat het fout is.
+- **Informatieopdrachten** eindigen met de knop **Ik heb het antwoord gevonden**. Die knop verschijnt alleen op de juiste pagina. Noteer het antwoord dat de deelnemer hardop geeft.
 
-### Schaalvragen na elke taak
+### Formulier na de sessie
 
-1 = helemaal niet, 2 = weinig, 3 = matig, 4 = veel, 5 = heel veel.
+Wij gebruikten een kort online formulier met zeven open vragen:
 
-- **Frustratie:** "Hoeveel frustratie of ergernis voelde u tijdens deze opdracht?"
-- **Onzekerheid:** "Hoe onzeker voelde u zich over wat u moest doen of over of het gelukt was?"
+1. Wat is uw deelnemercode?
+2. Welke onderdelen vond u makkelijk?
+3. Welke onderdelen vond u moeilijk of verwarrend?
+4. Voelden twee versies van een opdracht duidelijk verschillend?
+5. Wat hielp het meest bij het maken van de afspraken?
+6. Welke aanpassing zou u willen behouden?
+7. Heeft u nog andere opmerkingen?
 
-## Gegevens en privacy
+Frustratie en onzekerheid haalden wij uit wat deelnemers zeiden, uit zichtbaar gedrag in de opnames (zoals lang zoeken, herhaald tikken of opnieuw beginnen) en uit dit formulier.
 
-- De app slaat alleen `deelnemerscode;taak;duur_seconden` op in `data/taakduren.csv` op de laptop. Met de omgevingsvariabele `PWS_RESULTS_DIR` kies je een andere map. De map `data/` gaat nooit mee in Git.
-- Gebruik in alle bestanden alleen deelnemerscodes, geen namen of e-mailadressen. Bewaar de koppeling tussen naam en code apart.
-- Bewaar opnames en formulieren niet langer dan in het toestemmingsformulier staat.
-- Er worden geen echte zorggegevens, accounts, wachtwoorden of afspraken gebruikt. Alle personen, locaties en inhoud op de praktijksite zijn fictief.
+## Gegevens vastleggen
+
+Zet de gegevens per opdracht in [`templates/sessieregistratie.csv`](templates/sessieregistratie.csv) en de achtergrond per deelnemer in [`templates/deelnemers-achtergrond.csv`](templates/deelnemers-achtergrond.csv). De kolommen worden uitgelegd in [`templates/README.md`](templates/README.md). De kolommen `frustratie` en `onzekerheid` mag je leeg laten als je, net als wij, geen cijfervragen stelt.
+
+- Gebruik alleen deelnemerscodes, nooit namen. Bewaar de koppeling tussen naam en code apart.
+- Bewaar opnames en formulieren niet langer dan je in het toestemmingsformulier hebt afgesproken.
+- Er worden geen echte zorggegevens, accounts of afspraken gebruikt. Alle personen, locaties en inhoud op de praktijksite zijn fictief.
+
+## Andere mogelijkheden van het prototype
+
+Het prototype kan meer dan wij gebruikten. Op `/deelnemer` staat een sessie met een vast rooster van vijftien taken per code (A/B-paren, extra opdrachten en een inlogopdracht). Die route slaat de taakduren automatisch op in `data/taakduren.csv`. Ook zijn er een animatietest, een vergelijking van alles uit tegenover alles aan en een desktopgroep. Die hebben wij niet gebruikt. Zie [`INHOUD_EN_TESTROUTES.md`](INHOUD_EN_TESTROUTES.md) voor de routes en de inhoud van de site.
 
 ## Resultaten delen
 
-Open een issue in deze repository met het aantal deelnemers per apparaatgroep, hun leeftijdsbereik, de geanonimiseerde CSV-bestanden en de commit van het prototype die je gebruikte. Beschrijf resultaten per apparaatgroep en alleen met geldige gepaarde waarnemingen.
-
-## Aanpassen
-
-- Opdrachten, doelafspraken en verwachte antwoorden staan in `src/shared/protocol.ts`.
-- De inhoud van de praktijksite staat in `src/participant/siteContent.ts`.
-- `npm run roster` maakt `public/deelnemers.csv` opnieuw aan uit `src/shared/roster.ts`. Doe dit alleen als het roosteralgoritme verandert, en controleer de nieuwe CSV vóór gebruik.
-- `scripts/illustrator/` maakt A4-opdrachtkaarten in Illustrator; zie de README in die map.
-- `npm test` controleert de datumregels, de opdrachtvarianten, de variantisolatie en het rooster.
-
-Meer over routes, informatiestructuur en beeldmateriaal staat in [INHOUD_EN_TESTROUTES.md](INHOUD_EN_TESTROUTES.md).
+Heb je het onderzoek uitgevoerd? Open een issue in deze repository met het aantal deelnemers, hun leeftijdsgroep, hoe je de opdrachten en kenmerken verdeelde, de geanonimiseerde gegevens en de commit van het prototype die je gebruikte. Zie ook [`resultaten/README.md`](resultaten/README.md).
