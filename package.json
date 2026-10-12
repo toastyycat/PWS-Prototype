@@ -4,7 +4,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "roster": "node --experimental-strip-types scripts/generate-roster.mjs",
     "dev": "vite --configLoader runner --host 0.0.0.0",
     "build": "tsc -b && vite build --configLoader runner",
     "typecheck": "tsc -b",
