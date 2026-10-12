@@ -12,9 +12,9 @@ We hadden zelf maar weinig deelnemers. Daarom delen we het prototype en de metho
 
 ## Wat wordt getest?
 
-Er zijn vier kenmerken. Variant B is het volledige ontwerp met alle vier kenmerken aan. In variant A is precies één kenmerk weggelaten: het kenmerk dat getest wordt.
+Er zijn vier kenmerken. In ons onderzoek was bij elke taak precies één kenmerk uitgeschakeld en stonden de andere drie aan. Het prototype kan ook alles tegelijk aan of uit zetten; dat hebben wij niet getest.
 
-| Test | Kenmerk | Variant A (één kenmerk weggelaten) | Variant B (alles aan) |
+| Test | Kenmerk | Variant A (kenmerk uit) | Variant B (kenmerk aan) |
 |---|---|---|---|
 | 1 | Tekstgrootte | 16 px basistekst | 24 px tekst en grotere koppen |
 | 2 | Duidelijke navigatie | Terug en Verder achter een Menu-knop | Terug en Verder altijd zichtbaar |

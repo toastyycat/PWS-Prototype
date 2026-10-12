@@ -15,7 +15,7 @@ Je hoeft geen programmeur te zijn om deze map te begrijpen. Begin met de paper.
 ## Wat zijn de resultaten?
 
 - We testten met **5 deelnemers van 70 jaar en ouder**, allemaal op een smartphone.
-- Elke deelnemer deed **19 taken**: 11 afspraken maken en 8 informatie zoeken.
+- Samen deden de deelnemers **19 taken**: 11 afspraken maken en 8 informatie zoeken. Elke deelnemer deed er ongeveer vier.
 - Van de 10 beoordeelde afspraken lukten er **4**. Van de 8 informatietaken lukten er **6**.
 - Verborgen navigatie gaf de duidelijkste problemen: drie van de vier deelnemers zochten naar de volgende stap.
 - Kleinere tekst ging samen met meer fouten bij het kiezen van dienst en tijd. Dat kan ook komen door leren, want de deelnemers deden de taken voor het eerst.
