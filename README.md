@@ -1,154 +1,109 @@
-# Accessible booking UI for older adults
+# Toegankelijke afspraakwebsite voor ouderen
 
-*Nederlandse samenvatting en sessiehandleiding: [HANDLEIDING.md](HANDLEIDING.md).*
+Deze repository hoort bij een profielwerkstuk op de vwo over toegankelijke websites voor ouderen. De onderzoeksvraag:
 
-This repository contains the test prototype from a Dutch secondary-school research project (profielwerkstuk, VWO). The study asks:
+> Hoe kunnen tekstgrootte, duidelijke navigatie, contrast en een goed laadscherm helpen dat volwassenen van 65 jaar en ouder met weinig digitale ervaring zelfstandig een afspraak kunnen maken, met zo min mogelijk frustratie en onzekerheid?
 
-> How can text size, navigation, contrast and loading feedback help adults aged 65+ with little digital experience book an appointment on their own, with as little frustration and uncertainty as possible?
+Deelnemers maken op een smartphone een fictieve afspraak bij een fictieve fysiotherapiepraktijk. De onderzoeker zet per test één kenmerk uit en vergelijkt hoe snel, hoe zelfstandig en hoe prettig de deelnemer de afspraak maakt.
 
-Participants book fictional appointments at a fictional physiotherapy practice on a smartphone. The researcher switches individual design features on or off and compares how fast, how independently and how comfortably participants complete each booking.
+We hadden zelf maar weinig deelnemers. Daarom delen we het prototype en de methode, zodat **iedereen het onderzoek kan herhalen** en de (geanonimiseerde) resultaten kan delen.
 
-We had only a small number of participants ourselves, so we are publishing the prototype and the protocol. **Anyone may run the same study** and share their (anonymised) results. Everything you need is in this repository.
+> **Wil je alleen de resultaten lezen?** Ga naar de map [`resultaten/`](resultaten/README.md). Daar staat de paper en een uitleg in gewone taal.
 
-## What is being tested
+## Wat wordt getest?
 
-The study compares four design features:
+Er zijn vier kenmerken. Variant B is het volledige ontwerp met alle vier kenmerken aan. In variant A is precies één kenmerk weggelaten: het kenmerk dat getest wordt.
 
-| # | Feature | Feature left out | Feature on |
+| Test | Kenmerk | Variant A (één kenmerk weggelaten) | Variant B (alles aan) |
 |---|---|---|---|
-| 1 | Text size | 16 px base text | 24 px base text and larger headings |
-| 2 | Clear navigation | *Back* and *Next* hidden behind a *Menu* button | *Back* and *Next* always visible |
-| 3 | Contrast | All text and controls below a 4.5:1 contrast ratio | Contrast of at least 4.5:1 |
-| 6 | Loading screen | Current page stays unchanged during the 1.4 s wait | Skeleton of the next page during the 1.4 s wait |
+| 1 | Tekstgrootte | 16 px basistekst | 24 px tekst en grotere koppen |
+| 2 | Duidelijke navigatie | Terug en Verder achter een Menu-knop | Terug en Verder altijd zichtbaar |
+| 3 | Contrast | Tekst onder de 4,5:1-norm | Contrast van minstens 4,5:1 |
+| 6 | Laadscherm | Huidige pagina blijft staan tijdens het wachten | Skeleton van de volgende pagina tijdens het wachten |
 
-Each comparison is an A/B pair. **Variant B is the complete design, with all four features on. Variant A is the same design with exactly one feature left out**: the one being tested. So every task shows an almost complete design, and the difference between A and B isolates what that single feature adds. Each screen transition waits 1.4 seconds in every variant, so only the feedback during the wait differs.
+Elke schermovergang duurt 1,4 seconde, in alle varianten. Zo verschilt alleen de feedback tijdens het wachten.
 
-## How we ran the original study
+Het prototype kan meer dan wij gebruikten: een animatietest, een test met alles uit tegenover alles aan, een desktopgroep en extra informatieopdrachten. Zie [`HANDLEIDING.md`](HANDLEIDING.md) voor wat we precies deden en hoe je dat zelf herhaalt.
 
-- **Smartphone only.** All sessions took place on a smartphone.
-- **Four comparisons**: text size, clear navigation, contrast and loading screen, each with one feature left out in variant A.
-- **Dropped**: the micro-interactions (animation) comparison was not part of the final study.
-- Each booking task names a service, date and time ("Make an appointment for an intake on Tuesday 6 October 2026 at 10:30"). Different targets (X, Y, Z, W) within a comparison prevent learning effects, and both tasks in a pair use the same month.
-- Screen recordings of the phone and the researchers' notes were the main sources for errors, hesitations and remarks.
+## Zelf starten
 
-Five participants aged 70 and older took part, each on a smartphone, with 19 tasks in total: 11 bookings and 8 information searches.
-
-The full paper (method, results and discussion) is in [`paper/PWS-English-publication.pdf`](paper/PWS-English-publication.pdf).
-
-## Results in brief
-
-These results are preliminary: the sample was small and each feature was mostly tested with one type of task.
-
-- Four of the ten assessed bookings and six of the eight information tasks were successful.
-- **Hidden navigation** caused the clearest problems: three of four participants searched for the next step, and one could not find it.
-- **Smaller text** coincided with more errors when choosing a service and a time, although this may partly be a learning effect.
-- **Lower contrast** made reading harder for two participants but did not lead to failed tasks.
-- We observed no effect of missing **loading feedback**.
-- Several problems were unrelated to the four features, such as a prominent booking button that distracted participants during information tasks.
-
-We need more participants to draw firmer conclusions. That is why the prototype and materials are public.
-
-### What else the prototype can do
-
-The prototype supports more than we used. You can use these options to extend the study, but say so when you report results:
-
-- a **micro-interactions** comparison (4): screen and element animations, hover and press feedback;
-- a **full design** comparison (5): all features off against all features on;
-- a **desktop** group: codes D01–D100 are pre-scheduled for 51 smartphone and 49 desktop participants;
-- **information tasks** (I1–I4) and a **login task** (I5) with the fictional address `alex.voorbeeld@example.invalid`, as exploratory extras.
-
-The participant route (`/deelnemer`) follows the built-in roster in [`public/deelnemers.csv`](public/deelnemers.csv), which still schedules all six comparisons plus the three extra tasks: 15 tasks per code, in rotating order. A code always runs all 15 tasks. To repeat only our four comparisons, change `src/shared/roster.ts`, run `npm run roster` and check the new CSV before use.
-
-## What is measured
-
-Per task:
-
-- **Time on task** in seconds, from the moment the home screen appears until the booking is correctly confirmed. The app records this automatically; you can also measure it from the screen recording.
-- **Success**: completed independently within 3 minutes, yes or no.
-- **Errors**: wrong service, date or time, a wrong booking step, or an unnecessary or repeated confirmation. Opening the menu or scrolling is not an error.
-- **Frustration** and **uncertainty**, each on a 1–5 scale, asked right after the task.
-- **Observations**: think-aloud remarks and where the participant hesitated.
-
-Per participant: age, smartphone and internet use, prior experience with online booking, aids (glasses, zoom), and a short debrief.
-
-## Quick start
-
-You need [Node.js](https://nodejs.org/) 22.6 or newer.
+Je hebt [Node.js](https://nodejs.org/) 22.6 of nieuwer nodig.
 
 ```bash
 git clone https://github.com/toastyycat/PWS-Prototype.git
 cd PWS-Prototype
 npm ci
-npm test          # protocol, roster and variant checks
+npm test          # controleert de datums, opdrachten en varianten
 npm run build
-npm run preview   # http://localhost:4310, also reachable on your local network
+npm run preview   # http://localhost:4310, ook bereikbaar op je lokale netwerk
 ```
 
-Use `npm run dev` during development. Always run the app through Vite (`preview` or `dev`): a plain static file server cannot save task durations and returns 404 on direct links.
+Gebruik `npm run dev` tijdens het ontwikkelen. Draai de app altijd via Vite (`preview` of `dev`): een gewone bestandsserver kan de taakduren niet opslaan.
 
-| Route | Purpose |
+| Adres | Gebruik |
 |---|---|
-| `/deelnemer` | Participant session: enter a code (1–100) and the 15 tasks run in order. |
-| `/onderzoek` | Researcher overview: roster, CSV downloads, printable task cards. |
-| `/print/opdrachten` | Printable task cards for every participant. |
-| `/` | Demo: switch features and tasks freely to try the prototype. |
+| `/deelnemer` | Deelnemerssessie: voer een code in (1 tot en met 100). |
+| `/onderzoek` | Overzicht voor de onderzoeker: rooster en downloads. |
+| `/print/opdrachten` | Opdrachtkaarten om te printen. |
+| `/` | Demo om het prototype uit te proberen. Niet voor metingen. |
 
-The interface, the tasks and the website content are in Dutch, because the original participants were Dutch. To run the study in another language, translate `src/participant/siteContent.ts`, the task texts in `src/shared/protocol.ts` and the task cards.
+De interface en de opdrachten zijn in het Nederlands, omdat de deelnemers Nederlands spraken.
 
-## Running a session
+## Een sessie uitvoeren
 
-1. **Recruit** adults aged 65+, preferably with little digital experience. Explain that the website is being tested, not the person, that the appointment is fake, and that they can stop at any time.
-2. **Get written consent** for participation and, separately, for screen recording and for face or voice recording. A template is in [`templates/toestemmingsformulier.md`](templates/toestemmingsformulier.md).
-3. **Prepare devices.** Run the app on a laptop. Connect the test phone or second computer to the same Wi-Fi network (or a hotspot) and open the *Network* address that Vite prints, followed by `/deelnemer`. Keep the laptop awake: durations are saved there.
-4. **Print** the participant's task cards from `/print/opdrachten` and the registration sheet.
-5. **During the session**, one person reads the task aloud and asks the questions, and a second person records observations. Read each task *before* pressing *Start sessie* or *Verder naar TXX*, because the timer starts when the home screen appears. Give no hints. After 3 minutes, or when the participant gives up, the task counts as not completed.
-6. **After each task**, ask the two 1–5 questions: *How much frustration did you feel?* and *How uncertain did you feel about what to do, or whether it worked?*
-7. **Afterwards**, download `taakduren.csv` from `/onderzoek` and hold a short debrief.
+1. **Werf** volwassenen van 65 jaar en ouder, bij voorkeur met weinig digitale ervaring. Leg uit dat de website wordt getest en niet de persoon, dat de afspraak nep is en dat deelname vrijwillig is.
+2. **Vraag schriftelijke toestemming** voor deelname, en apart voor schermopname en gezicht- of stemopname. Een sjabloon staat in [`templates/`](templates/).
+3. **Bereid de apparaten voor.** Draai de app op een laptop. Verbind de testtelefoon met hetzelfde wifi-netwerk en open het netwerkadres dat Vite toont, gevolgd door `/deelnemer`.
+4. **Print** de opdrachtkaarten en het registratieformulier.
+5. **Tijdens de sessie** leest één persoon de opdracht voor en stelt de vragen, en een tweede persoon noteert wat er gebeurt. Lees de opdracht voor je op "Start sessie" of "Verder naar TXX" drukt: de tijd begint zodra het startscherm verschijnt. Geef geen hints.
+6. **Stel na elke taak** de twee vragen over frustratie en onzekerheid (1 tot 5).
+7. **Sluit af** met een kort nagesprek en download daarna `taakduren.csv` via `/onderzoek`.
 
-The full step-by-step script, with the exact Dutch wording and the error rules, is in [HANDLEIDING.md](HANDLEIDING.md).
+Het volledige script, met de exacte formuleringen, staat in [`HANDLEIDING.md`](HANDLEIDING.md).
 
-## Data and privacy
+## Gegevens en privacy
 
-- The app stores only `participant code; task; duration in seconds` in `data/taakduren.csv`, on the researcher's laptop. Set `PWS_RESULTS_DIR` to store it elsewhere. The `data/` folder is never committed to Git.
-- Record everything else in the templates in [`templates/`](templates/): one row per task in `sessieregistratie.csv` and one row per participant in `deelnemers-achtergrond.csv`. Use participant codes only, never names. The column definitions are in [`templates/README.md`](templates/README.md).
-- Screen recordings can show faces or voices. Store them outside cloud-synced folders, keep the link between names and codes separate, and delete everything after the retention period agreed in the consent form.
-- No real health data, accounts, passwords or appointments are involved. All people, places and content on the practice website are fictional.
+- De app slaat alleen de code, de taak en de duur in seconden op, in `data/taakduren.csv` op de laptop. De map `data/` gaat nooit mee naar Git.
+- Vul de overige gegevens in de sjablonen in met alleen een deelnemerscode, nooit een naam. Bewaar de koppeling tussen naam en code apart.
+- Schermopnamen kunnen gezichten en stemmen tonen. Bewaar ze buiten cloudgesynchroniseerde mappen en wis ze na de bewaartermijn uit het toestemmingsformulier.
+- Er worden geen echte zorggegevens, accounts of afspraken gebruikt. Alle personen, locaties en inhoud op de website zijn verzonnen.
 
-**This repository contains no participant data.**
+**Deze repository bevat geen persoonsgegevens van deelnemers.**
 
-## Sharing your results
+## Resultaten delen
 
-If you run the study, we would like to hear about it. Open an issue with:
+Heb je het onderzoek zelf uitgevoerd? Open dan een issue met:
 
-- the number of participants per device group, and their age range;
-- the anonymised `taakduren.csv`, `sessieregistratie.csv` and `deelnemers-achtergrond.csv`;
-- the commit hash of the prototype you used, and any changes you made to the protocol.
+- het aantal deelnemers en hun leeftijdsgroep;
+- de geanonimiseerde gegevens, zonder namen of opnames;
+- de commit van het prototype en eventuele wijzigingen aan de methode.
 
-Report results per device group, using only valid paired observations. A technical failure makes a task invalid; do not count it as a participant error.
+Rapporteer per apparaatgroep en gebruik alleen geldige, gepaarde waarnemingen. Een technische storing is een ongeldige meting, geen fout van de deelnemer.
 
-## Repository layout
+## Mappen
 
-| Path | Contents |
+| Map of bestand | Inhoud |
 |---|---|
-| `src/participant/` | The fictional practice website and booking flow. |
-| `src/researcher/` | Researcher overview and task-card printing. |
-| `src/shared/protocol.ts` | Variants, booking targets, information tasks and expected answers. |
-| `src/shared/roster.ts`, `scripts/generate-roster.mjs` | Counterbalanced roster; `npm run roster` regenerates `public/deelnemers.csv`. |
-| `server/taskCsv.ts` | Vite plugin that saves task durations. |
-| `scripts/illustrator/` | Illustrator script that turns the roster into A4 task cards. |
-| `templates/` | Consent form and registration templates. |
-| `paper/` | The full paper (English, PDF). |
-| `docs/` | Earlier method documents (Dutch, Word). |
-| `INHOUD_EN_TESTROUTES.md` | Routes, tasks and site structure (Dutch). |
-| `AGENTS.md` | Original build brief for the prototype (Dutch). |
+| `src/participant/` | De fictieve praktijkwebsite en de afspraakflow. |
+| `src/researcher/` | Het overzicht voor de onderzoeker en het printen van kaarten. |
+| `src/shared/protocol.ts` | Varianten, doelafspraken, informatieopdrachten en verwachte antwoorden. |
+| `src/shared/roster.ts`, `scripts/generate-roster.mjs` | Het rooster; `npm run roster` maakt `public/deelnemers.csv` opnieuw. |
+| `server/taskCsv.ts` | De Vite-plugin die de taakduren opslaat. |
+| `scripts/illustrator/` | Illustrator-script dat het rooster omzet naar A4-opdrachtkaarten. |
+| `templates/` | Toestemmingsformulier en registratiesjablonen. |
+| `resultaten/` | Paper, tabellen en figuren van de resultaten van D01 tot D05. |
+| `docs/` | De oorspronkelijke methode (Word, Nederlands). |
+| `HANDLEIDING.md` | Stap-voor-stap-handleiding voor een sessie. |
+| `INHOUD_EN_TESTROUTES.md` | Routes, opdrachten en de inhoud van de website. |
+| `AGENTS.md` | De oorspronkelijke bouwopdracht voor het prototype. |
 
-## Known limitations
+## Bekende beperkingen
 
-- Information tasks finish when the participant presses *Ik heb het antwoord gevonden*, but that button only appears on the correct page, which can give away that the participant is in the right place.
-- There is no button to abort a task. If a participant gives up or reaches the 3-minute limit, the researcher completes the task, and its recorded time is not valid.
-- The participant route has a fixed 100 % zoom. If a participant needs larger text, use the phone's own zoom and keep it the same for the whole session.
-- The extended registration panel in `/onderzoek` (consent, device pairing, observations) is a front-end example and is not connected.
+- De informatieopdrachten eindigen met de knop "Ik heb het antwoord gevonden". Die knop verschijnt alleen op de juiste pagina, en dat kan de deelnemer verraden.
+- Er is geen knop om een taak af te breken. Bij opgeven of de tijdgrens van 3 minuten maakt de onderzoeker de taak af, en de tijd is dan ongeldig.
+- De deelnemersroute staat vast op 100 % zoom. Gebruik de zoom van het apparaat als iemand grotere tekst nodig heeft, en houd die gelijk voor de hele sessie.
+- Het uitgebreide onderzoekspaneel op `/onderzoek` (toestemming, apparaatkoppeling, observaties) is een voorbeeld en niet aangesloten.
 
-## License
+## Licentie
 
-The source code is available under the [MIT License](LICENSE). The method documents, task texts and templates may be reused under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The images in `public/images/` were generated for this prototype; see `INHOUD_EN_TESTROUTES.md` for the prompts.
+De broncode staat onder de [MIT-licentie](LICENSE). De methodedocumenten, opdrachten en sjablonen mogen onder [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) worden hergebruikt. De afbeeldingen in `public/images/` zijn voor dit prototype gemaakt; de prompts staan in `INHOUD_EN_TESTROUTES.md`.
